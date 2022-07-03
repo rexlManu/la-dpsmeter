@@ -7,7 +7,6 @@ namespace LostArkLogger
         public PCStruct(BitReader reader)
         {
             if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
-            if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
         }
         public String Name;
         public List<ItemInfo> EquippedItems;
@@ -18,7 +17,7 @@ namespace LostArkLogger
         public List<Byte> blist;
         public String str;
         public List<StatusEffectData> statusEffectDatas;
-        public List<subPKTNewNpc29> subPKTNewNpc29s;
+        public List<subPKTInitPC29> subPKTInitPC29s;
         public List<ItemInfo> itemInfos;
         public List<UInt32> u32list;
         public subPKTNewNpc5 subPKTNewNpc5;

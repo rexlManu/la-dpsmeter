@@ -7,13 +7,13 @@ namespace LostArkLogger
         public NpcStruct(BitReader reader)
         {
             if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
-            if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
         }
         public UInt64 NpcId;
         public UInt32 NpcType;
         public subPKTNewNpc66 subPKTNewNpc66;
         public List<StatusEffectData> statusEffectDatas;
         public List<subPKTNewNpc29> subPKTNewNpc29s;
+        public List<subPKTInitPC29> subPKTInitPC29s;
         public List<UInt64> u64list;
         public List<Byte[]> bytearraylist;
         public StatPair statPair;

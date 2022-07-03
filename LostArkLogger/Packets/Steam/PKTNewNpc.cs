@@ -6,14 +6,20 @@ namespace LostArkLogger
     {
         public void SteamDecode(BitReader reader)
         {
-            b_0 = reader.ReadByte();
-            b_1 = reader.ReadByte();
-            if (b_1 == 1)
-                b_2 = reader.ReadByte();
-            b_3 = reader.ReadByte();
-            if (b_3 == 1)
-                u64 = reader.ReadUInt64();
-            npcStruct = reader.Read<NpcStruct>();
-        }
+			b_0 = reader.ReadByte();
+			bool flag = b_0 == 1;
+			if (flag)
+			{
+				u64 = reader.ReadUInt64();
+			}
+			b_1 = reader.ReadByte();
+			bool flag2 = b_1 == 1;
+			if (flag2)
+			{
+				b_2 = reader.ReadByte();
+			}
+			b_3 = reader.ReadByte();
+			npcStruct = reader.Read<NpcStruct>(0);
+		}
     }
 }

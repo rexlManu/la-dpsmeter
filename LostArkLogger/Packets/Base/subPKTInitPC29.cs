@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 namespace LostArkLogger
 {
-    public partial class subPKTNewNpc29
+    public partial class subPKTInitPC29
     {
-        public subPKTNewNpc29(BitReader reader)
+        public subPKTInitPC29(BitReader reader)
         {
-            if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
+            SteamDecode(reader);
         }
         public Int64 p64_0;
         public Int64 p64_1;
