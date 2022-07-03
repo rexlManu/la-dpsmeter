@@ -7,6 +7,7 @@ namespace LostArkLogger
         public SkillDamageEvent(BitReader reader)
         {
             if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
+            if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
         }
         public Int64 CurrentHealth;
         public Int64 Damage;

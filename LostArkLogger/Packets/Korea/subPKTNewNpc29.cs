@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 namespace LostArkLogger
 {
-    public partial class subPKTInitPC29
+    public partial class subPKTNewNpc29
     {
-        public void SteamDecode(BitReader reader)
+        public void KoreaDecode(BitReader reader)
         {
-            u64 = reader.ReadUInt64();
+            b_0 = reader.ReadByte();
             p64_0 = reader.ReadPackedInt();
             u16 = reader.ReadUInt16();
-            b_0 = reader.ReadByte();
+            u64 = reader.ReadUInt64();
             b_1 = reader.ReadByte();
             b_2 = reader.ReadByte();
             p64_1 = reader.ReadPackedInt();
