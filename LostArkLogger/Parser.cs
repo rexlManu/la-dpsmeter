@@ -191,7 +191,7 @@ namespace LostArkLogger
                 FrontAttack = isFrontAttack
             };
             onCombatEvent?.Invoke(log);
-            AppendLog(8, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, skillId.ToString(), Skill.GetSkillName(skillId), skillEffectId.ToString(), Skill.GetSkillEffectName(skillEffectId), targetEntity.EntityId.ToString("X"), targetEntity.Name, dmgEvent.Damage.ToString(), dmgEvent.Modifier.ToString("X"), isCrit ? "1" : "0", isBackAttack ? "1" : "0", isFrontAttack ? "1" : "0", dmgEvent.CurrentHealth.ToString(), dmgEvent.MaxHealth.ToString());
+            AppendLog(8, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, skillId.ToString(), Skill.GetSkillName(skillId), skillEffectId.ToString(), Skill.GetSkillEffectName(skillEffectId), targetEntity.EntityId.ToString("X"), targetEntity.Name, dmgEvent.Damage.ToString(), dmgEvent.Modifier.ToString("X"), isCrit ? "1" : "0", isBackAttack ? "1" : "0", isFrontAttack ? "1" : "0", dmgEvent.CurHp.ToString(), dmgEvent.MaxHp.ToString());
         }
         void ProcessSkillDamage(PKTSkillDamageNotify damage)
         {
@@ -470,7 +470,7 @@ namespace LostArkLogger
                 {
                     var buff = new PKTStatusEffectAddNotify(new BitReader(payload));
                     var amount = buff.statusEffectData.hasValue == 1 ? BitConverter.ToUInt32(buff.statusEffectData.Value, 0) : 0;
-                    AppendLog(10, buff.statusEffectData.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(buff.statusEffectData.SourceId).Name, buff.statusEffectData.BuffId.ToString(), SkillBuff.GetSkillBuffName(buff.statusEffectData.BuffId), buff.New.ToString(), buff.ObjectId.ToString("X"), currentEncounter.Entities.GetOrAdd(buff.ObjectId).Name, amount.ToString());
+                    AppendLog(10, buff.statusEffectData.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(buff.statusEffectData.SourceId).Name, buff.statusEffectData.StatusEffectId.ToString(), SkillBuff.GetSkillBuffName(buff.statusEffectData.StatusEffectId), buff.New.ToString(), buff.ObjectId.ToString("X"), currentEncounter.Entities.GetOrAdd(buff.ObjectId).Name, amount.ToString());
                 }
                 /*else if (opcode == OpCodes.PKTParalyzationStateNotify)
                 {

@@ -28,6 +28,7 @@ namespace LostArkLogger
         public UInt64 u64_0;
         public UInt64 u64_1;
         public UInt64 u64_2;
+        public UInt64 u64_3;
         public UInt32 u32_0;
         public UInt32 u32_1;
         public UInt32 u32_2;
@@ -40,6 +41,7 @@ namespace LostArkLogger
         public UInt32 u32_9;
         public UInt32 u32_10;
         public UInt32 u32_11;
+        public UInt32 u32_12;
         public UInt16 u16_0;
         public UInt16 u16_1;
         public UInt16 u16_2;

@@ -2,18 +2,16 @@ using System;
 using System.Collections.Generic;
 namespace LostArkLogger
 {
-    public partial class PKTStatusEffectAddNotify
+    public partial class PKTPartyStatusEffectAddNotify
     {
-        public PKTStatusEffectAddNotify(BitReader reader)
+        public PKTPartyStatusEffectAddNotify(BitReader reader)
         {
             if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
             if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
         }
-        public UInt64 ObjectId;
-        public Byte New;
-        public StatusEffectData statusEffectData;
-        public UInt64 u64_0;
-        public UInt64 u64_1;
+        public List<StatusEffectData> statusEffectDatas;
+        public UInt64 PartyId;
+        public UInt64 PlayerIdOnRefresh;
         public Byte b;
     }
 }

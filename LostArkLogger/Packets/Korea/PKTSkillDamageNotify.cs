@@ -6,11 +6,11 @@ namespace LostArkLogger
     {
         public void KoreaDecode(BitReader reader)
         {
+            SkillId = reader.ReadUInt32();
+            SkillEffectId = reader.ReadUInt32();
+            SourceId = reader.ReadUInt64();
             skillDamageEvents = reader.ReadList<SkillDamageEvent>();
             b = reader.ReadByte();
-            SourceId = reader.ReadUInt64();
-            SkillEffectId = reader.ReadUInt32();
-            SkillId = reader.ReadUInt32();
         }
     }
 }

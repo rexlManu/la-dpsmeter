@@ -6,11 +6,11 @@ namespace LostArkLogger
     {
         public void KoreaDecode(BitReader reader)
         {
-            bytearray_0 = reader.ReadBytes(6);
-            SourceId = reader.ReadUInt64();
-            bytearray_1 = reader.ReadBytes(0);
+            bytearray_2 = reader.ReadBytes(4072);
             TargetId = reader.ReadUInt64();
-            bytearray_2 = reader.ReadBytes(0);
+            bytearray_0 = reader.ReadBytes(17);
+            SourceId = reader.ReadUInt64();
+            bytearray_1 = reader.ReadBytes(13);
         }
     }
 }

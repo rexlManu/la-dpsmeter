@@ -6,16 +6,16 @@ namespace LostArkLogger
     {
         public void KoreaDecode(BitReader reader)
         {
-            b_0 = reader.ReadByte();
-            TargetId = reader.ReadUInt64();
-            CurrentHealth = reader.ReadPackedInt();
-            MaxHealth = reader.ReadPackedInt();
-            u16 = reader.ReadUInt16();
             Modifier = reader.ReadByte();
             Damage = reader.ReadPackedInt();
-            b_1 = reader.ReadByte();
-            if (b_1 == 1)
-                b_2 = reader.ReadByte();
+            b_0 = reader.ReadByte();
+            if (b_0 == 1)
+                b_1 = reader.ReadByte();
+            u16 = reader.ReadUInt16();
+            CurHp = reader.ReadPackedInt();
+            TargetId = reader.ReadUInt64();
+            MaxHp = reader.ReadPackedInt();
+            b_2 = reader.ReadByte();
         }
     }
 }
