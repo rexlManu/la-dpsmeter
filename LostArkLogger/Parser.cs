@@ -1,13 +1,13 @@
 ﻿using K4os.Compression.LZ4;
 using LostArkLogger.Utilities;
 using SharpPcap;
-using Snappy;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace LostArkLogger
 {
@@ -20,9 +20,8 @@ namespace LostArkLogger
         ILiveDevice pcap;
         public event Action<LogInfo> onCombatEvent;
         public event Action onNewZone;
-        public event Action<string> onLogAppend;
+        public event Action beforeNewZone;
         public event Action<int> onPacketTotalCount;
-        public bool enableLogging = true;
         public bool use_npcap = false;
         private object lockPacketProcessing = new object(); // needed to synchronize UI swapping devices
         public Machina.Infrastructure.NetworkMonitorType? monitorType = null;
@@ -31,6 +30,10 @@ namespace LostArkLogger
         Byte[] fragmentedPacket = new Byte[0];
         private string _localPlayerName = "You";
         private uint _localGearLevel = 0;
+        public bool WasWipe = false;
+        public bool WasKill = false;
+        public bool DisplayNames = true;
+        public StatusEffectTracker statusEffectTracker;
 
         string logsPath;
         string fileName;
@@ -39,44 +42,15 @@ namespace LostArkLogger
 
         public Parser(string customLogPath = default)
         {
-            UpdateLogPath(customLogPath);
-
             Encounters.Add(currentEncounter);
             onCombatEvent += Parser_onDamageEvent;
             onNewZone += Parser_onNewZone;
-
+            statusEffectTracker = new StatusEffectTracker(this);
+            statusEffectTracker.OnStatusEffectEnded += Parser_onStatusEffectEnded;
+            statusEffectTracker.OnStatusEffectStarted += StatusEffectTracker_OnStatusEffectStarted; ;
             InstallListener();
         }
 
-        public void UpdateLogPath(string customLogPath = default)
-        {
-            if (String.IsNullOrEmpty(customLogPath))
-            {
-                string documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
-                logsPath = Path.Combine(documentsPath, "Lost Ark Logs");
-            }
-            else
-            {
-                logsPath = customLogPath;
-            }
-
-            if (!Directory.Exists(logsPath)) Directory.CreateDirectory(logsPath);
-            fileName = logsPath + "\\LostArk_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".log";
-
-            CreateStreamWriter();
-        }
-
-        public void CreateStreamWriter()
-        {
-            if (stream != null)
-            {
-                stream.Flush();
-                stream.Close();
-            }
-
-            stream = new StreamWriter(fileName, true);
-            writerLines = 0;
-        }
         // UI needs to be able to ask us to reload our listener based on the current user settings
         public void InstallListener()
         {
@@ -119,7 +93,7 @@ namespace LostArkLogger
                                 {
                                     var exceptionMessage = "Exception while trying to listen to NIC " + device.Name + "\n" + ex.ToString();
                                     Console.WriteLine(exceptionMessage);
-                                    AppendLog(0, exceptionMessage);
+                                    Logger.AppendLog(254, exceptionMessage);
                                 }
                             }
                         }
@@ -128,7 +102,7 @@ namespace LostArkLogger
                     {
                         var exceptionMessage = "Sharppcap init failed, using rawsockets instead, exception:\n" + ex.ToString();
                         Console.WriteLine(exceptionMessage);
-                        AppendLog(0, exceptionMessage);
+                        Logger.AppendLog(254, exceptionMessage);
                     }
                     // If we failed to find a pcap device, fall back to rawsockets.
                     if (!foundAdapter)
@@ -152,19 +126,8 @@ namespace LostArkLogger
 
         void ProcessDamageEvent(Entity sourceEntity, UInt32 skillId, UInt32 skillEffectId, SkillDamageEvent dmgEvent)
         {
-            // damage dealer is a player
-            if (!String.IsNullOrEmpty(sourceEntity.ClassName) && sourceEntity.ClassName != "UnknownClass")
-            {
-                // player hasn't been announced on logs before. possibly because user opened logger after they got into a zone
-                if (!currentEncounter.LoggedEntities.ContainsKey(sourceEntity.EntityId))
-                {
-                    // classId is unknown, can be fixed
-                    // level, currenthp and maxhp is unknown
-                    AppendLog(3, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, "0", sourceEntity.ClassName, "1", "0", "0");
-                    currentEncounter.LoggedEntities.TryAdd(sourceEntity.EntityId, true);
-                }
-            }
-
+            if (((HitFlag)dmgEvent.Modifier == HitFlag.HIT_FLAG_DAMAGE_SHARE) && skillId == 0 && skillEffectId == 0)
+                return;
             var skillName = Skill.GetSkillName(skillId, skillEffectId);
             var targetEntity = currentEncounter.Entities.GetOrAdd(dmgEvent.TargetId);
             var destinationName = targetEntity != null ? targetEntity.VisibleName : dmgEvent.TargetId.ToString("X");
@@ -186,20 +149,20 @@ namespace LostArkLogger
                 SkillEffectId = skillEffectId,
                 SkillName = skillName,
                 Damage = (ulong)dmgEvent.Damage,
-                Crit = isCrit,
-                BackAttack = isBackAttack,
-                FrontAttack = isFrontAttack
+                Crit =
+                    ((HitFlag)dmgEvent.Modifier &
+                     (HitFlag.HIT_FLAG_CRITICAL |
+                      HitFlag.HIT_FLAG_DOT_CRITICAL)) > 0,
+                BackAttack = ((HitFlag)dmgEvent.Modifier & (HitFlag.HIT_OPTION_BACK_ATTACK)) > 0,
+                FrontAttack = ((HitFlag)dmgEvent.Modifier & (HitFlag.HIT_OPTION_FRONTAL_ATTACK)) > 0
             };
             onCombatEvent?.Invoke(log);
-            AppendLog(8, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, skillId.ToString(), Skill.GetSkillName(skillId), skillEffectId.ToString(), Skill.GetSkillEffectName(skillEffectId), targetEntity.EntityId.ToString("X"), targetEntity.Name, dmgEvent.Damage.ToString(), dmgEvent.Modifier.ToString("X"), isCrit ? "1" : "0", isBackAttack ? "1" : "0", isFrontAttack ? "1" : "0", dmgEvent.CurHp.ToString(), dmgEvent.MaxHp.ToString());
+            currentEncounter.RaidInfos.Add(log);
+            Logger.AppendLog(8, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, skillId.ToString(), Skill.GetSkillName(skillId), skillEffectId.ToString(), Skill.GetSkillEffectName(skillEffectId), targetEntity.EntityId.ToString("X"), targetEntity.Name, dmgEvent.Damage.ToString(), dmgEvent.Modifier.ToString("X"), dmgEvent.CurHp.ToString(), dmgEvent.MaxHp.ToString());
         }
         void ProcessSkillDamage(PKTSkillDamageNotify damage)
         {
-            var sourceEntity = currentEncounter.Entities.GetOrAdd(damage.SourceId);
-            if (sourceEntity.Type == Entity.EntityType.Projectile)
-                sourceEntity = currentEncounter.Entities.GetOrAdd(sourceEntity.OwnerId);
-            if (sourceEntity.Type == Entity.EntityType.Summon)
-                sourceEntity = currentEncounter.Entities.GetOrAdd(sourceEntity.OwnerId);
+            var sourceEntity = GetSourceEntity(damage.SourceId);
             var className = Skill.GetClassFromSkill(damage.SkillId);
             if (String.IsNullOrEmpty(sourceEntity.ClassName) && className != "UnknownClass")
             {
@@ -214,11 +177,7 @@ namespace LostArkLogger
 
         void ProcessSkillDamage(PKTSkillDamageAbnormalMoveNotify damage)
         {
-            var sourceEntity = currentEncounter.Entities.GetOrAdd(damage.SourceId);
-            if (sourceEntity.Type == Entity.EntityType.Projectile)
-                sourceEntity = currentEncounter.Entities.GetOrAdd(sourceEntity.OwnerId);
-            if (sourceEntity.Type == Entity.EntityType.Summon)
-                sourceEntity = currentEncounter.Entities.GetOrAdd(sourceEntity.OwnerId);
+            var sourceEntity = GetSourceEntity(damage.SourceId);
             var className = Skill.GetClassFromSkill(damage.SkillId);
             if (String.IsNullOrEmpty(sourceEntity.ClassName) && className != "UnknownClass")
             {
@@ -279,24 +238,30 @@ namespace LostArkLogger
                 Xor.Cipher(payload, BitConverter.ToUInt16(packets, 2), XorTable);
                 switch (packets[4])
                 {
+                    case 0: //None
+                        payload = payload.Skip(16).ToArray();
+                        break;
                     case 1: //LZ4
                         var buffer = new byte[0x11ff2];
                         var result = LZ4Codec.Decode(payload, 0, payload.Length, buffer, 0, 0x11ff2);
                         if (result < 1) throw new Exception("LZ4 output buffer too small");
-                        payload = buffer.Take(result).ToArray(); //TODO: check LZ4 payload and see if we should skip some data
+                        payload = buffer.Take(result).Skip(16).ToArray();
                         break;
                     case 2: //Snappy
                         //https://github.com/robertvazan/snappy.net
-                        payload = SnappyCodec.Uncompress(payload.ToArray()).Skip(16).ToArray();
+                        payload = Snappy.SnappyCodec.Uncompress(payload.ToArray()).Skip(16).ToArray();
                         //payload = SnappyCodec.Uncompress(payload.Skip(Properties.Settings.Default.Region == Region.Russia ? 4 : 0).ToArray()).Skip(16).ToArray();
                         break;
                     case 3: //Oodle
                         payload = Oodle.Decompress(payload).Skip(16).ToArray();
                         break;
+                    default:
+                        payload = payload.Skip(16).ToArray();
+                        break;
                 }
 
                 // write packets for analyzing, bypass common, useless packets
-                //if (opcode != OpCodes.PKTMoveError && opcode != OpCodes.PKTMoveNotify && opcode != OpCodes.PKTMoveNotifyList && opcode != OpCodes.PKTTransitStateNotify && opcode != OpCodes.PKTPing && opcode != OpCodes.PKTPong)
+                // if (opcode != OpCodes.PKTMoveError && opcode != OpCodes.PKTMoveNotify && opcode != OpCodes.PKTMoveNotifyList && opcode != OpCodes.PKTTransitStateNotify && opcode != OpCodes.PKTPing && opcode != OpCodes.PKTPong)
                 //    Console.WriteLine(opcode + " : " + opcode.ToString("X") + " : " + BitConverter.ToString(payload));
 
                 /* Uncomment for auction house accessory sniffing
@@ -311,6 +276,23 @@ namespace LostArkLogger
                     }
                 }
                 */
+                if (opcode == OpCodes.PKTTriggerStartNotify)
+                {
+                    var trigger = new PKTTriggerStartNotify(new BitReader(payload));
+                    if (trigger.Signal >= (int)TriggerSignalType.DUNGEON_PHASE1_CLEAR && trigger.Signal <= (int)TriggerSignalType.DUNGEON_PHASE4_FAIL) // if in range of dungeon fail/kill
+                    {
+                        if (((TriggerSignalType)trigger.Signal).ToString().Contains("FAIL")) // not as good performance, but more clear and in case enums change order in future
+                        {
+                            WasWipe = true;
+                            WasKill = false;
+                        }
+                        else
+                        {
+                            WasKill = true;
+                            WasWipe = false;
+                        }
+                    }
+                }
                 if (opcode == OpCodes.PKTNewProjectile)
                 {
                     var projectile = new PKTNewProjectile(new BitReader(payload)).projectileInfo;
@@ -324,91 +306,142 @@ namespace LostArkLogger
                 else if (opcode == OpCodes.PKTInitEnv)
                 {
                     var env = new PKTInitEnv(new BitReader(payload));
-                    if (currentEncounter.Infos.Count == 0) Encounters.Remove(currentEncounter);
+                    beforeNewZone?.Invoke();
+                    if (currentEncounter.Infos.Count <= 15) Encounters.Remove(currentEncounter);
+                    else currentEncounter.End = DateTime.Now;
+
                     currentEncounter = new Encounter();
                     Encounters.Add(currentEncounter);
-
-                    currentEncounter.Entities.AddOrUpdate(new Entity
+                    var temp = new Entity
                     {
                         EntityId = env.PlayerId,
                         Name = _localPlayerName,
                         Type = Entity.EntityType.Player,
                         GearLevel = _localGearLevel
-                    });
+                    };
+                    currentEncounter.Entities.AddOrUpdate(temp);
+
                     onNewZone?.Invoke();
-                    AppendLog(1, env.PlayerId.ToString("X"));
+                    Logger.AppendLog(1, env.PlayerId.ToString("X"));
                 }
-                else if (opcode == OpCodes.PKTRaidResult // raid over
-                         || opcode == OpCodes.PKTRaidBossKillNotify // boss dead, includes argos phases
-                         || opcode == OpCodes.PKTTriggerBossBattleStatus) // wipe
+                else if (opcode == OpCodes.PKTRaidBossKillNotify //Packet sent for boss kill, wipe or start
+                         || opcode == OpCodes.PKTTriggerBossBattleStatus
+                         || opcode == OpCodes.PKTRaidResult)
                 {
-                    currentEncounter.End = DateTime.Now;
-                    currentEncounter = new Encounter();
-                    if (opcode == OpCodes.PKTRaidBossKillNotify || opcode == OpCodes.PKTTriggerBossBattleStatus)
-                        currentEncounter.Entities = Encounters.Last().Entities; // preserve entities 
-                    Encounters.Add(currentEncounter);
+                    var Duration = Convert.ToUInt64(DateTime.Now.Subtract(currentEncounter.Start).TotalSeconds);
 
-                    var phaseCode = "0"; // PKTRaidResult
-                    if (opcode == OpCodes.PKTRaidBossKillNotify) phaseCode = "1";
-                    else if (opcode == OpCodes.PKTTriggerBossBattleStatus) phaseCode = "2";
-                    AppendLog(2, phaseCode);
+                    if (WasKill || WasWipe || opcode == OpCodes.PKTRaidBossKillNotify || opcode == OpCodes.PKTRaidResult) // if kill or wipe update the raid time duration 
+                    {
+                        currentEncounter.RaidTime += Duration;
+                        foreach (var i in currentEncounter.Entities.Where(e => e.Value.Type == Entity.EntityType.Player))
+                        {
+                            if (!(i.Value.dead)) // if Player not dead on end of kill write fake death logInfo to track their time alive
+                            {
+                                var log = new LogInfo
+                                {
+                                    Time = DateTime.Now,
+                                    SourceEntity = i.Value,
+                                    DestinationEntity = i.Value,
+                                    SkillName = "Death",
+                                    TimeAlive = Duration,
+                                    Death = true
+                                };
+                                currentEncounter.RaidInfos.Add(log);
+                                currentEncounter.Infos.Add(log);
 
+                            }
+                            else // reset death flag on every wipe or kill
+                            {
+                                i.Value.dead = false;
+                            }
+                        }
+                    }
+                    Task.Run(() =>
+                    {
+                        currentEncounter.End = DateTime.Now;
+                        Task.Delay(1500); // wait 1500ms to capture any final damage packets
+                        currentEncounter = new Encounter();
+                        currentEncounter.Entities = Encounters.Last().Entities; // preserve entities
+                        if (WasWipe || Encounters.Last().AfterWipe)
+                        {
+
+                            currentEncounter.RaidInfos = Encounters.Last().RaidInfos;
+                            currentEncounter.AfterWipe = true; // flag signifying zone after wipe
+                            if (Encounters.Last().AfterWipe)
+                            {
+                                Duration = 0; // dont add time for zone inbetween pulls for raid time
+                                currentEncounter.AfterWipe = false;
+                            }
+                            currentEncounter.RaidTime = Encounters.Last().RaidTime + Duration;// update raid duration
+                            WasWipe = false;
+
+                        }
+                        else if (WasKill)
+                        {
+                            WasKill = false;
+                        }
+
+                        if (Encounters.Last().Infos.Count <= 15)
+                        {
+                            Encounters.Remove(Encounters.Last());
+                        }
+                        Encounters.Add(currentEncounter);
+                        Logger.AppendLog(2);
+                    });
                 }
                 else if (opcode == OpCodes.PKTInitPC)
                 {
                     var pc = new PKTInitPC(new BitReader(payload));
+                    beforeNewZone?.Invoke();
                     if (currentEncounter.Infos.Count == 0) Encounters.Remove(currentEncounter);
                     currentEncounter = new Encounter();
                     Encounters.Add(currentEncounter);
-                    _localPlayerName = pc.Name;
+                    _localPlayerName = DisplayNames ? pc.Name : Npc.GetPcClass(pc.ClassId);
                     _localGearLevel = pc.GearLevel;
-                    currentEncounter.Entities.AddOrUpdate(new Entity
+                    var tempEntity = new Entity
                     {
+
                         EntityId = pc.PlayerId,
                         Name = _localPlayerName,
                         ClassName = Npc.GetPcClass(pc.ClassId),
                         Type = Entity.EntityType.Player,
                         GearLevel = _localGearLevel
-                    });
-                    currentEncounter.Entities.AddOrUpdate(new Entity { ClassName = Npc.GetPcClass(pc.ClassId) });
+                    };
+                    currentEncounter.Entities.AddOrUpdate(tempEntity);
+                    Logger.AppendLog(3, pc.PlayerId.ToString("X"), pc.Name, pc.ClassId.ToString(), Npc.GetPcClass(pc.ClassId), pc.Level.ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
+                    statusEffectTracker.InitPc(pc);
                     onNewZone?.Invoke();
-
-                    if (!currentEncounter.LoggedEntities.ContainsKey(pc.PlayerId))
-                    {
-                        var gearScore = BitConverter.ToSingle(BitConverter.GetBytes(pc.GearLevel), 0).ToString("0.##");
-                        AppendLog(3, pc.PlayerId.ToString("X"), pc.Name, pc.ClassId.ToString(), Npc.GetPcClass(pc.ClassId), pc.Level.ToString(), gearScore, pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
-                        currentEncounter.LoggedEntities.TryAdd(pc.PlayerId, true);
-                    }
                 }
                 else if (opcode == OpCodes.PKTNewPC)
                 {
-                    var pc = new PKTNewPC(new BitReader(payload)).pCStruct;
-                    currentEncounter.Entities.AddOrUpdate(new Entity
+                    var pcPacket = new PKTNewPC(new BitReader(payload));
+                    var pc = pcPacket.pCStruct;
+                    var temp = new Entity
                     {
                         EntityId = pc.PlayerId,
-                        Name = pc.Name,
+                        PartyId = pc.PartyId,
+                        Name = DisplayNames ? pc.Name : Npc.GetPcClass(pc.ClassId),
                         ClassName = Npc.GetPcClass(pc.ClassId),
                         Type = Entity.EntityType.Player,
                         GearLevel = pc.GearLevel
-                    });
-
-                    if (!currentEncounter.LoggedEntities.ContainsKey(pc.PlayerId))
-                    {
-                        var gearScore = BitConverter.ToSingle(BitConverter.GetBytes(pc.GearLevel), 0).ToString("0.##");
-                        AppendLog(3, pc.PlayerId.ToString("X"), pc.Name, pc.ClassId.ToString(), Npc.GetPcClass(pc.ClassId), pc.Level.ToString(), gearScore, pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
-                        currentEncounter.LoggedEntities.TryAdd(pc.PlayerId, true);
-                    }
+                    };
+                    currentEncounter.Entities.AddOrUpdate(temp);
+                    currentEncounter.PartyEntities[temp.PartyId] = temp;
+                    Logger.AppendLog(3, pc.PlayerId.ToString("X"), temp.Name, pc.ClassId.ToString(), Npc.GetPcClass(pc.ClassId), pc.Level.ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
+                    statusEffectTracker.NewPc(pcPacket);
                 }
                 else if (opcode == OpCodes.PKTNewNpc)
                 {
-                    var npc = new PKTNewNpc(new BitReader(payload)).npcStruct;
+                    var npcPacket = new PKTNewNpc(new BitReader(payload));
+                    var npc = npcPacket.npcStruct;
                     currentEncounter.Entities.AddOrUpdate(new Entity
                     {
                         EntityId = npc.NpcId,
                         Name = Npc.GetNpcName(npc.NpcType),
                         Type = Entity.EntityType.Npc
                     });
-                    AppendLog(4, npc.NpcId.ToString("X"), npc.NpcType.ToString(), Npc.GetNpcName(npc.NpcType), npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
+                    Logger.AppendLog(4, npc.NpcId.ToString("X"), npc.NpcType.ToString(), Npc.GetNpcName(npc.NpcType), npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
+                    statusEffectTracker.NewNpc(npcPacket);
                 }
                 else if (opcode == OpCodes.PKTRemoveObject)
                 {
@@ -419,12 +452,31 @@ namespace LostArkLogger
                 else if (opcode == OpCodes.PKTDeathNotify)
                 {
                     var death = new PKTDeathNotify(new BitReader(payload));
-                    AppendLog(5, death.TargetId.ToString("X"), currentEncounter.Entities.GetOrAdd(death.TargetId).Name, death.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(death.SourceId).Name);
+                    Logger.AppendLog(5, death.TargetId.ToString("X"), currentEncounter.Entities.GetOrAdd(death.TargetId).Name, death.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(death.SourceId).Name);
+                    DateTime DeathTime = DateTime.Now;
+                    TimeSpan timeAlive = DeathTime.Subtract(currentEncounter.Start);
+                    if (currentEncounter.Entities.GetOrAdd(death.TargetId).Type == Entity.EntityType.Player) // if death is from player, add death log for time alive tracking
+                    {
+                        currentEncounter.Entities.GetOrAdd(death.TargetId).dead = true;
+                        var log = new LogInfo
+                        {
+                            Time = DateTime.Now,
+                            SourceEntity = currentEncounter.Entities.GetOrAdd(death.TargetId),
+                            DestinationEntity = currentEncounter.Entities.GetOrAdd(death.TargetId),
+                            SkillName = "Death",
+                            TimeAlive = Convert.ToUInt64(timeAlive.TotalSeconds),
+                            Death = true
+                        };
+                        currentEncounter.RaidInfos.Add(log);
+                        currentEncounter.Infos.Add(log);
+                    }
+
+                    statusEffectTracker.DeathNotify(death);
                 }
                 else if (opcode == OpCodes.PKTSkillStartNotify)
                 {
                     var skill = new PKTSkillStartNotify(new BitReader(payload));
-                    AppendLog(6, skill.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(skill.SourceId).Name, skill.SkillId.ToString(), Skill.GetSkillName(skill.SkillId));
+                    Logger.AppendLog(6, skill.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(skill.SourceId).Name, skill.SkillId.ToString(), Skill.GetSkillName(skill.SkillId));
                 }
                 else if (opcode == OpCodes.PKTSkillStageNotify)
                 {
@@ -445,7 +497,7 @@ namespace LostArkLogger
                         5 on suc 6 on fail
                     */
                     var skill = new PKTSkillStageNotify(new BitReader(payload));
-                    AppendLog(7, skill.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(skill.SourceId).Name, skill.SkillId.ToString(), Skill.GetSkillName(skill.SkillId), skill.Stage.ToString());
+                    Logger.AppendLog(7, skill.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(skill.SourceId).Name, skill.SkillId.ToString(), Skill.GetSkillName(skill.SkillId), skill.Stage.ToString());
                 }
                 else if (opcode == OpCodes.PKTSkillDamageNotify)
                     ProcessSkillDamage(new PKTSkillDamageNotify(new BitReader(payload)));
@@ -464,13 +516,29 @@ namespace LostArkLogger
                     };
                     onCombatEvent?.Invoke(log);
                     // might push this by 1??
-                    AppendLog(9, entity.EntityId.ToString("X"), entity.Name, health.StatPairChangedList.Value[0].ToString(), health.StatPairChangedList.Value[0].ToString());// need to lookup cached max hp??
+                    Logger.AppendLog(9, entity.EntityId.ToString("X"), entity.Name, health.StatPairChangedList.Value[0].ToString(), health.StatPairChangedList.Value[0].ToString());// need to lookup cached max hp??
                 }
                 else if (opcode == OpCodes.PKTStatusEffectAddNotify) // shields included
                 {
-                    var buff = new PKTStatusEffectAddNotify(new BitReader(payload));
-                    var amount = buff.statusEffectData.hasValue == 1 ? BitConverter.ToUInt32(buff.statusEffectData.Value, 0) : 0;
-                    AppendLog(10, buff.statusEffectData.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(buff.statusEffectData.SourceId).Name, buff.statusEffectData.StatusEffectId.ToString(), SkillBuff.GetSkillBuffName(buff.statusEffectData.StatusEffectId), buff.New.ToString(), buff.ObjectId.ToString("X"), currentEncounter.Entities.GetOrAdd(buff.ObjectId).Name, amount.ToString());
+                    var statusEffect = new PKTStatusEffectAddNotify(new BitReader(payload));
+                    statusEffectTracker.Add(statusEffect);
+                    var amount = statusEffect.statusEffectData.hasValue == 1 ? BitConverter.ToUInt32(statusEffect.statusEffectData.Value, 0) : 0;
+                }
+                else if (opcode == OpCodes.PKTPartyStatusEffectAddNotify)
+                {
+                    var partyStatusEffect = new PKTPartyStatusEffectAddNotify(new BitReader(payload));
+                    statusEffectTracker.PartyAdd(partyStatusEffect);
+                }
+                else if (opcode == OpCodes.PKTStatusEffectRemoveNotify)
+                {
+                    var statusEffectRemove = new PKTStatusEffectRemoveNotify(new BitReader(payload));
+                    statusEffectTracker.Remove(statusEffectRemove);
+
+                }
+                else if (opcode == OpCodes.PKTPartyStatusEffectRemoveNotify)
+                {
+                    var partyStatusEffectRemove = new PKTPartyStatusEffectRemoveNotify(new BitReader(payload));
+                    statusEffectTracker.PartyRemove(partyStatusEffectRemove);
                 }
                 /*else if (opcode == OpCodes.PKTParalyzationStateNotify)
                 {
@@ -507,7 +575,7 @@ namespace LostArkLogger
                         Counter = true
                     };
                     onCombatEvent?.Invoke(log);
-                    AppendLog(11, source.EntityId.ToString("X"), source.Name, target.EntityId.ToString("X"), target.Name);
+                    Logger.AppendLog(12, source.EntityId.ToString("X"), source.Name, target.EntityId.ToString("X"), target.Name);
                 }
                 else if (opcode == OpCodes.PKTNewNpcSummon)
                 {
@@ -524,48 +592,9 @@ namespace LostArkLogger
             }
         }
 
-        public Boolean debugLog = false;
-        BinaryWriter logger;
-        FileStream logStream;
         UInt32 currentIpAddr = 0xdeadbeef;
         int loggedPacketCount = 0;
 
-        void AppendLog(LogInfo s)
-        {
-            if (enableLogging)
-            {
-                stream.WriteLine(s.ToString());
-
-                writerLines++;
-                if (writerLines % 5 == 0) stream.Flush();
-            }
-        }
-        System.Security.Cryptography.MD5 hash = System.Security.Cryptography.MD5.Create();
-        void AppendLog(int id, params string[] elements)
-        {
-            if (enableLogging)
-            {
-                var log = id + "|" + DateTime.Now.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'") + "|" + String.Join("|", elements);
-                var logHash = string.Concat(hash.ComputeHash(System.Text.Encoding.Unicode.GetBytes(log)).Select(x => x.ToString("x2")));
-                stream.WriteLine(log + "|" + logHash);
-                onLogAppend?.Invoke(log + "\n");
-
-                writerLines++;
-                if (writerLines % 5 == 0) stream.Flush();
-            }
-        }
-        void DoDebugLog(byte[] bytes)
-        {
-            if (debugLog)
-            {
-                if (logger == null)
-                {
-                    logStream = new FileStream(fileName.Replace(".log", ".bin"), FileMode.Create);
-                    logger = new BinaryWriter(logStream);
-                }
-                logger.Write(BitConverter.GetBytes(DateTime.Now.ToBinary()).Concat(BitConverter.GetBytes(bytes.Length)).Concat(bytes).ToArray());
-            }
-        }
 
         void Device_OnPacketArrival_machina(Machina.Infrastructure.TCPConnection connection, byte[] bytes)
         {
@@ -578,12 +607,13 @@ namespace LostArkLogger
                 {
                     if (currentIpAddr == 0xdeadbeef || (bytes.Length > 4 && GetOpCode(bytes) == OpCodes.PKTAuthTokenResult && bytes[0] == 0x1e))
                     {
+                        beforeNewZone?.Invoke();
                         onNewZone?.Invoke();
                         currentIpAddr = srcAddr;
                     }
                     else return;
                 }
-                DoDebugLog(bytes);
+                Logger.DoDebugLog(bytes);
                 ProcessPacket(bytes.ToList());
             }
         }
@@ -608,12 +638,13 @@ namespace LostArkLogger
                     {
                         if (currentIpAddr == 0xdeadbeef || (bytes.Length > 4 && GetOpCode(bytes) == OpCodes.PKTAuthTokenResult && bytes[0] == 0x1e))
                         {
+                            beforeNewZone?.Invoke();
                             onNewZone?.Invoke();
                             currentIpAddr = srcAddr;
                         }
                         else return;
                     }
-                    DoDebugLog(bytes);
+                    Logger.DoDebugLog(bytes);
                     ProcessPacket(bytes.ToList());
                 }
             }
@@ -622,13 +653,50 @@ namespace LostArkLogger
         {
             currentEncounter.Infos.Add(log);
         }
+
+        private void Parser_onStatusEffectEnded(StatusEffect statusEffect, TimeSpan duration)
+        {
+            Entity dstEntity;
+            if (statusEffect.Type == StatusEffect.StatusEffectType.Party)
+                dstEntity = currentEncounter.PartyEntities.GetOrAdd(statusEffect.TargetId);
+            else
+                dstEntity = currentEncounter.Entities.GetOrAdd(statusEffect.TargetId);
+            var log = new LogInfo
+            {
+                Time = DateTime.Now,
+                SourceEntity = currentEncounter.Entities.GetOrAdd(statusEffect.SourceId),
+                DestinationEntity = dstEntity,
+                SkillEffectId = statusEffect.StatusEffectId,
+                SkillName = SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId),
+                Damage = 0,
+                Duration = duration
+            };
+            currentEncounter.Infos.Add(log);
+            Logger.AppendLog(11, statusEffect.StatusEffectId.ToString("X"), SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId), statusEffect.TargetId.ToString("X"), currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name);
+
+        }
+        private void StatusEffectTracker_OnStatusEffectStarted(StatusEffect statusEffect)
+        {
+            Logger.AppendLog(10, statusEffect.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(statusEffect.SourceId).Name, statusEffect.StatusEffectId.ToString("X"), SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId), statusEffect.TargetId.ToString("X"), currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name, statusEffect.Value.ToString());
+        }
+
         private void Parser_onNewZone()
         {
+            //Logger.StartNewLogFile();
+            loggedPacketCount = 0;
+        }
+
+        public Entity GetSourceEntity(UInt64 sourceId)
+        {
+            var sourceEntity = currentEncounter.Entities.GetOrAdd(sourceId);
+            if (sourceEntity.Type == Entity.EntityType.Projectile)
+                sourceEntity = currentEncounter.Entities.GetOrAdd(sourceEntity.OwnerId);
+            if (sourceEntity.Type == Entity.EntityType.Summon)
+                sourceEntity = currentEncounter.Entities.GetOrAdd(sourceEntity.OwnerId);
+            return sourceEntity;
         }
         public void UninstallListeners()
         {
-            logger?.Dispose();
-            logStream?.Dispose();
             if (tcp != null) tcp.Stop();
             if (pcap != null)
             {
@@ -641,7 +709,7 @@ namespace LostArkLogger
                 {
                     var exceptionMessage = "Exception while trying to stop capture on NIC " + pcap.Name + "\n" + ex.ToString();
                     Console.WriteLine(exceptionMessage);
-                    AppendLog(0, exceptionMessage);
+                    Logger.AppendLog(254, exceptionMessage);
                 }
             }
             tcp = null;

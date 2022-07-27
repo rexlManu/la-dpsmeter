@@ -12,7 +12,7 @@ namespace LostArkLogger
             SourceId = reader.ReadUInt64();
             bytearray_2 = reader.ReadBytes(2);
             SkillId = reader.ReadUInt32();
-            bytearray_1 = reader.ReadBytes(0);
+            bytearray_3 = reader.ReadBytes(0);
         }
     }
 }
