@@ -25,6 +25,17 @@ namespace LostArkLogger.Utilities
         {
             if (!Directory.Exists(logsPath)) Directory.CreateDirectory(logsPath);
         }
+
+        public static void UpdateLogPath(string customLogPath = default)
+        {
+            if (!String.IsNullOrEmpty(customLogPath))
+            {
+                logsPath = customLogPath;
+            }
+
+            if (!Directory.Exists(logsPath)) Directory.CreateDirectory(logsPath);
+        }
+
         public static System.Security.Cryptography.MD5 hash = System.Security.Cryptography.MD5.Create();
         public static void StartNewLogFile()
         {

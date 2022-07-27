@@ -1,9 +1,9 @@
-﻿using System;
+﻿using LostArkLogger.Utilities;
+using System;
 using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
-using LostArkLogger.Utilities;
 
 namespace LostArkLogger
 {
@@ -53,7 +53,12 @@ namespace LostArkLogger
             Oodle.Init();
 
             string logPath = "";
-            if(CustomLogPathIndex != -1) logPath = args[CustomLogPathIndex + 1];
+            if (CustomLogPathIndex != -1)
+            {
+                logPath = args[CustomLogPathIndex + 1];
+                Logger.UpdateLogPath(logPath);
+                Logger.StartNewLogFile();
+            }
 
             var sniffer = new Parser();
 
