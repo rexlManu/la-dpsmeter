@@ -55,7 +55,7 @@ namespace LostArkLogger
             string logPath = "";
             if(CustomLogPathIndex != -1) logPath = args[CustomLogPathIndex + 1];
 
-            var sniffer = new Parser(logPath);
+            var sniffer = new Parser();
 
             if (NpcapIndex != -1)
             {

@@ -35,12 +35,7 @@ namespace LostArkLogger
         public bool DisplayNames = true;
         public StatusEffectTracker statusEffectTracker;
 
-        string logsPath;
-        string fileName;
-        StreamWriter stream;
-        int writerLines = 0;
-
-        public Parser(string customLogPath = default)
+        public Parser()
         {
             Encounters.Add(currentEncounter);
             onCombatEvent += Parser_onDamageEvent;
@@ -738,12 +733,6 @@ namespace LostArkLogger
         }
 
         public void Dispose()
-        {
-            if (stream != null)
-            {
-                stream.Flush();
-                stream.Close();
-            }
-        }
+        {}
     }
 }
