@@ -2,26 +2,45 @@
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
+using LostArkLogger.Utilities;
+using System.ComponentModel;
 
 namespace LostArkLogger
 {
-    public partial class MainWindow : Form
+    public partial class MainWindow : Form, INotifyPropertyChanged
     {
         Parser sniffer;
         Overlay overlay;
+        private int _packetCount;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string PacketCount
+        {
+            get { return "Logged Packets: " + _packetCount; }
+        }
 
         public MainWindow()
         {
-            Control.CheckForIllegalCrossThreadCalls = false;
             InitializeComponent();
             versionLabel.Text = "v" + System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
             Oodle.Init();
             if (!Directory.Exists("logs")) Directory.CreateDirectory("logs");
             sniffer = new Parser();
-            sniffer.onPacketTotalCount += (int totalPacketCount) => loggedPacketCountLabel.Text = "Logged Packets : " + totalPacketCount;
+            sniffer.onPacketTotalCount += (int totalPacketCount) =>
+            {
+                _packetCount = totalPacketCount;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PacketCount)));
+            };
             regionSelector.DataSource = Enum.GetValues(typeof(Region));
             regionSelector.SelectedIndex = (int)Properties.Settings.Default.Region;
             regionSelector.SelectedIndexChanged += new EventHandler(regionSelector_SelectedIndexChanged);
+            loggedPacketCountLabel.Text = "Logged Packets : 0";
+            loggedPacketCountLabel.DataBindings.Add("Text", this, nameof(PacketCount));
+            displayName.Checked = Properties.Settings.Default.DisplayNames;
+            autoUpload.Checked = Properties.Settings.Default.AutoUpload;
+            displayName.CheckedChanged += new EventHandler(displayName_CheckedChanged);
+            autoUpload.CheckedChanged += new EventHandler(autoUpload_CheckedChanged);
             //sniffModeCheckbox.Checked = Properties.Settings.Default.Npcap;
             overlay = new Overlay();
             overlay.AddSniffer(sniffer);
@@ -38,14 +57,9 @@ namespace LostArkLogger
             overlay.Visible = overlayEnabled.Checked;
         }
 
-        private void logEnabled_CheckedChanged(object sender, EventArgs e)
-        {
-            this.sniffer.enableLogging = logEnabled.Checked;
-        }
-
         private void debugLog_CheckedChanged(object sender, EventArgs e)
         {
-            sniffer.debugLog = debugLog.Checked;
+            Logger.debugLog = debugLog.Checked;
         }
 
         private void checkUpdate_Click(object sender, EventArgs e)
@@ -54,7 +68,7 @@ namespace LostArkLogger
             {
                 wc.Headers["User-Agent"] = "LostArkLogger";
                 var json = wc.DownloadString(@"https://api.github.com/repos/shalzuth/LostArkLogger/releases/latest");
-                var version = json.Substring(json.IndexOf("tag_name") + 12);
+                var version = json.Substring(json.IndexOf("tag_name") + 11);
                 version = version.Substring(0, version.IndexOf("\""));
                 if (version == System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString()) MessageBox.Show("Current version is up to date : " + version, "Version Info");
                 else
@@ -84,12 +98,24 @@ namespace LostArkLogger
 
         private void regionSelector_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (regionSelector.SelectedIndex == -1)
-                Console.WriteLine("");
             Properties.Settings.Default.Region = (Region)Enum.Parse(typeof(Region), regionSelector.Text);
             Properties.Settings.Default.Save();
             System.Diagnostics.Process.Start(AppDomain.CurrentDomain.FriendlyName);
             Environment.Exit(0);
+        }
+
+        private void displayName_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DisplayNames = displayName.Checked;
+            Properties.Settings.Default.Save();
+
+        }
+
+        private void autoUpload_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.AutoUpload = autoUpload.Checked;
+            Properties.Settings.Default.Save();
+
         }
     }
 }

@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,32 +44,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\machina\Machina\ConnectionManager.cs" />
-    <Compile Include="..\machina\Machina\Decoders\IPDecoder.cs" />
-    <Compile Include="..\machina\Machina\Decoders\TCPDecoder.cs" />
-    <Compile Include="..\machina\Machina\Headers\IPv4Header.cs" />
-    <Compile Include="..\machina\Machina\Headers\IPv6Header.cs" />
-    <Compile Include="..\machina\Machina\Headers\TCPHeader.cs" />
-    <Compile Include="..\machina\Machina\Headers\UDPHeader.cs" />
-    <Compile Include="..\machina\Machina\Infrastructure\ConversionUtility.cs" />
-    <Compile Include="..\machina\Machina\Infrastructure\InterfaceHelper.cs" />
-    <Compile Include="..\machina\Machina\Infrastructure\NetworkMonitorType.cs" />
-    <Compile Include="..\machina\Machina\Infrastructure\ProcessTCPInfo.cs" />
-    <Compile Include="..\machina\Machina\Infrastructure\TCPConnection.cs" />
-    <Compile Include="..\machina\Machina\Infrastructure\TCPNetworkMonitorConfig.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\machina\Machina\Sockets\CapturedData.cs" />
-    <Compile Include="..\machina\Machina\Sockets\ICaptureSocket.cs" />
-    <Compile Include="..\machina\Machina\Sockets\PCapCaptureSocket.cs" />
-    <Compile Include="..\machina\Machina\Sockets\PcapDevice.cs" />
-    <Compile Include="..\machina\Machina\Sockets\PcapDeviceState.cs" />
-    <Compile Include="..\machina\Machina\Sockets\PcapException.cs" />
-    <Compile Include="..\machina\Machina\Sockets\PcapInterop.cs" />
-    <Compile Include="..\machina\Machina\Sockets\RawCaptureSocket.cs" />
-    <Compile Include="..\machina\Machina\TCPNetworkMonitor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="LICENSE.md" />
+    <Compile Include="..\machina\Machina\*.cs" />
+    <Compile Include="..\machina\Machina\Decoders\*.cs" />
+    <Compile Include="..\machina\Machina\Headers\*.cs" />
+    <Compile Include="..\machina\Machina\Infrastructure\*.cs" />
+    <Compile Include="..\machina\Machina\Sockets\*.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

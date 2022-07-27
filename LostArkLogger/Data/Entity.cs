@@ -7,11 +7,13 @@ namespace LostArkLogger
     {
         public UInt64 EntityId;
         public UInt64 OwnerId;
+        public UInt64 PartyId;
         public String Name;
         public String ClassName = "";
         public EntityType Type = EntityType.Npc;
         public UInt32 Stagger;
         public UInt32 GearLevel;
+        public Boolean dead = false;
         public String GearScore
         {
             get

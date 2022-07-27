@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,15 +12,13 @@ namespace LostArkLogger
     internal static class Program
     {
         public static bool IsConsole = Console.OpenStandardInput(1) != Stream.Null;
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main(string[] args)
         {
             Properties.Settings.Default.Providers.Clear();
-            Bluegrams.Application.PortableSettingsProvider.SettingsFileName = AppDomain.CurrentDomain.FriendlyName.Replace(".exe", ".ini");
+            Bluegrams.Application.PortableSettingsProvider.SettingsFileName = AppDomain.CurrentDomain.FriendlyName + ".ini";
             Bluegrams.Application.PortableSettingsProvider.ApplyProvider(Properties.Settings.Default);
+            if(Properties.Settings.Default.Region == Region.Steam) VersionCompatibility();
             if (!AdminRelauncher()) return;
             if (!IsConsole) Warning();
             AttemptFirewallPrompt();
@@ -37,6 +35,13 @@ namespace LostArkLogger
                 httpBridge.args = args;
                 httpBridge.Start();
             }
+            if (File.Exists(Utilities.Logger.fileName) && Properties.Settings.Default.AutoUpload)
+            {
+                var fileBytes = File.ReadAllBytes(Utilities.Logger.fileName);
+                var fileText = File.ReadAllText(Utilities.Logger.fileName);
+                if (fileBytes.Length > 100 && fileText.Contains("8|"))
+                    Utilities.Uploader.UploadLog(fileBytes);
+            }
         }
         static void AttemptFirewallPrompt()
         {
@@ -46,10 +51,16 @@ namespace LostArkLogger
             t.Start();
             t.Stop();
         }
+        static void VersionCompatibility()
+        {
+            var installedVersion = VersionCheck.GetLostArkVersion();
+            if (installedVersion > VersionCheck.SupportedSteamVersion)
+                MessageBox.Show("DPS Meter is out of date.\nDPS Meter might not work until updated.\nCheck Discord/Github for more info.", "Out of date!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
         static void Warning()
         {
             if (Properties.Settings.Default.IgnoreWarning) return;
-            if (AppDomain.CurrentDomain.FriendlyName == "LostArkLogger.exe")
+            if (AppDomain.CurrentDomain.FriendlyName.Contains("LostArk"))
             {
                 //var tempName = "LostArkDps" + Guid.NewGuid().ToString().Substring(0, 6) + ".exe";
                 var tempName = "DpsMeter.exe";
@@ -81,7 +92,7 @@ namespace LostArkLogger
                 {
                     UseShellExecute = true,
                     WorkingDirectory = Environment.CurrentDirectory,
-                    FileName = Assembly.GetEntryAssembly().CodeBase,
+                    FileName = Assembly.GetEntryAssembly().CodeBase.Replace(".dll", ".exe"),
                     Verb = "runas"
                 };
                 try { Process.Start(startInfo); }
