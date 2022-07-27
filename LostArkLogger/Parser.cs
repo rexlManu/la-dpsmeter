@@ -395,7 +395,11 @@ namespace LostArkLogger
                             Encounters.Remove(Encounters.Last());
                         }
                         Encounters.Add(currentEncounter);
-                        Logger.AppendLog(2);
+
+                        var phaseCode = "0"; // PKTRaidResult
+                        if (opcode == OpCodes.PKTRaidBossKillNotify) phaseCode = "1";
+                        else if (opcode == OpCodes.PKTTriggerBossBattleStatus) phaseCode = "2";
+                        Logger.AppendLog(2, phaseCode);
                     });
                 }
                 else if (opcode == OpCodes.PKTInitPC)
