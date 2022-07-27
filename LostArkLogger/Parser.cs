@@ -3,7 +3,6 @@ using LostArkLogger.Utilities;
 using SharpPcap;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -421,7 +420,6 @@ namespace LostArkLogger
                         GearLevel = _localGearLevel
                     };
                     currentEncounter.Entities.AddOrUpdate(tempEntity);
-                    Logger.AppendLog(3, pc.PlayerId.ToString("X"), pc.Name, pc.ClassId.ToString(), Npc.GetPcClass(pc.ClassId), pc.Level.ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
                     statusEffectTracker.InitPc(pc);
                     onNewZone?.Invoke();
 
@@ -447,8 +445,14 @@ namespace LostArkLogger
                     };
                     currentEncounter.Entities.AddOrUpdate(temp);
                     currentEncounter.PartyEntities[temp.PartyId] = temp;
-                    Logger.AppendLog(3, pc.PlayerId.ToString("X"), temp.Name, pc.ClassId.ToString(), Npc.GetPcClass(pc.ClassId), pc.Level.ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
                     statusEffectTracker.NewPc(pcPacket);
+
+                    if (!currentEncounter.LoggedEntities.ContainsKey(pc.PlayerId))
+                    {
+                        var gearScore = BitConverter.ToSingle(BitConverter.GetBytes(pc.GearLevel), 0).ToString("0.##");
+                        Logger.AppendLog(3, pc.PlayerId.ToString("X"), temp.Name, pc.ClassId.ToString(), Npc.GetPcClass(pc.ClassId), pc.Level.ToString(), gearScore, pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_HP)].ToString(), pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte)StatType.STAT_TYPE_MAX_HP)].ToString());
+                        currentEncounter.LoggedEntities.TryAdd(pc.PlayerId, true);
+                    }
                 }
                 else if (opcode == OpCodes.PKTNewNpc)
                 {
@@ -473,6 +477,7 @@ namespace LostArkLogger
                 {
                     var death = new PKTDeathNotify(new BitReader(payload));
                     Logger.AppendLog(5, death.TargetId.ToString("X"), currentEncounter.Entities.GetOrAdd(death.TargetId).Name, death.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(death.SourceId).Name);
+
                     DateTime DeathTime = DateTime.Now;
                     TimeSpan timeAlive = DeathTime.Subtract(currentEncounter.Start);
                     if (currentEncounter.Entities.GetOrAdd(death.TargetId).Type == Entity.EntityType.Player) // if death is from player, add death log for time alive tracking
@@ -537,6 +542,7 @@ namespace LostArkLogger
                     onCombatEvent?.Invoke(log);
                     // might push this by 1??
                     Logger.AppendLog(9, entity.EntityId.ToString("X"), entity.Name, health.StatPairChangedList.Value[0].ToString(), health.StatPairChangedList.Value[0].ToString());// need to lookup cached max hp??
+
                 }
                 else if (opcode == OpCodes.PKTStatusEffectAddNotify) // shields included
                 {
@@ -698,6 +704,7 @@ namespace LostArkLogger
         private void StatusEffectTracker_OnStatusEffectStarted(StatusEffect statusEffect)
         {
             Logger.AppendLog(10, statusEffect.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(statusEffect.SourceId).Name, statusEffect.StatusEffectId.ToString("X"), SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId), statusEffect.TargetId.ToString("X"), currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name, statusEffect.Value.ToString());
+
         }
 
         private void Parser_onNewZone()
@@ -737,6 +744,6 @@ namespace LostArkLogger
         }
 
         public void Dispose()
-        {}
+        { }
     }
 }
