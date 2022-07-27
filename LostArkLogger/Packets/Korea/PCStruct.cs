@@ -52,10 +52,6 @@ namespace LostArkLogger
             b_9 = reader.ReadByte();
             b_10 = reader.ReadByte();
             b_11 = reader.ReadByte();
-            u32list = reader.ReadList<UInt32>();
-            statusEffectDatas = reader.ReadList<StatusEffectData>();
-            bytearray_0 = reader.ReadBytes(25);
-            EquippedItems = reader.ReadList<ItemInfo>();
         }
     }
 }
