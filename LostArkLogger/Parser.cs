@@ -141,13 +141,6 @@ namespace LostArkLogger
             var destinationName = targetEntity != null ? targetEntity.VisibleName : dmgEvent.TargetId.ToString("X");
             //var log = new LogInfo { Time = DateTime.Now, Source = sourceName, PC = sourceName.Contains("("), Destination = destinationName, SkillName = skillName, Crit = (dmgEvent.FlagsMaybe & 0x81) > 0, BackAttack = (dmgEvent.FlagsMaybe & 0x10) > 0, FrontAttack = (dmgEvent.FlagsMaybe & 0x20) > 0 };
 
-            var isCrit = ((DamageModifierFlags)dmgEvent.Modifier &
-                     (DamageModifierFlags.DotCrit |
-                      DamageModifierFlags.SkillCrit)) > 0;
-
-            var isBackAttack = ((DamageModifierFlags)dmgEvent.Modifier & (DamageModifierFlags.BackAttack)) > 0;
-            var isFrontAttack = ((DamageModifierFlags)dmgEvent.Modifier & (DamageModifierFlags.FrontAttack)) > 0;
-
             var log = new LogInfo
             {
                 Time = DateTime.Now,
@@ -166,7 +159,7 @@ namespace LostArkLogger
             };
             onCombatEvent?.Invoke(log);
             currentEncounter.RaidInfos.Add(log);
-            Logger.AppendLog(8, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, skillId.ToString(), Skill.GetSkillName(skillId), skillEffectId.ToString(), Skill.GetSkillEffectName(skillEffectId), targetEntity.EntityId.ToString("X"), targetEntity.Name, dmgEvent.Damage.ToString(), dmgEvent.Modifier.ToString("X"), isCrit ? "1" : "0", isBackAttack ? "1" : "0", isFrontAttack ? "1" : "0", dmgEvent.CurHp.ToString(), dmgEvent.MaxHp.ToString());
+            Logger.AppendLog(8, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, skillId.ToString(), Skill.GetSkillName(skillId), skillEffectId.ToString(), Skill.GetSkillEffectName(skillEffectId), targetEntity.EntityId.ToString("X"), targetEntity.Name, dmgEvent.Damage.ToString(), dmgEvent.Modifier.ToString("X"), dmgEvent.CurHp.ToString(), dmgEvent.MaxHp.ToString());
         }
         void ProcessSkillDamage(PKTSkillDamageNotify damage)
         {
