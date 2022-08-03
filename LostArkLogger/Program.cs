@@ -22,7 +22,6 @@ namespace LostArkLogger
             if (!AdminRelauncher()) return;
             if (!IsConsole) Warning();
             AttemptFirewallPrompt();
-
             if (!IsConsole)
             {
                 Application.EnableVisualStyles();
@@ -53,9 +52,19 @@ namespace LostArkLogger
         }
         static void VersionCompatibility()
         {
-            var installedVersion = VersionCheck.GetLostArkVersion();
-            if (installedVersion > VersionCheck.SupportedSteamVersion)
-                MessageBox.Show("DPS Meter is out of date.\nDPS Meter might not work until updated.\nCheck Discord/Github for more info.", "Out of date!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            (var region, var installedVersion) = VersionCheck.GetLostArkVersion();
+            if (installedVersion == null)
+            {
+                MessageBox.Show("Launch Lost Ark before launching logger", "Lost Ark Not Running", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                Environment.Exit(0);
+            }
+            else if (region == Region.Unknown)
+                MessageBox.Show("DPS Meter is out of date.\nDPS Meter might not work until updated.\nCheck Discord/Github for more info.\nFeel free to add a message in the discord informing shalzuth that it's out of data", "Out of date!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (Properties.Settings.Default.Region != region)
+            {
+                Properties.Settings.Default.Region = region;
+                Properties.Settings.Default.Save();
+            }
         }
         static void Warning()
         {
