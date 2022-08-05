@@ -17,31 +17,23 @@ namespace LostArkLogger
         public static Version SupportedKoreaVersion = new Version("1.250.475.1812734");
         public static (Region, Version) GetLostArkVersion()
         {
-            var lostArkProcesses = Process.GetProcessesByName("LOSTARK");
-            foreach(var lostArkProcess in lostArkProcesses)
+            try
             {
-                var sb = new StringBuilder(1024);
-                int bufferLength = sb.Capacity + 1;
-                QueryFullProcessImageName(lostArkProcess.Handle, 0, sb, ref bufferLength);
-                var lostArkExe = sb.ToString();
-                var version = new Version(FileVersionInfo.GetVersionInfo(lostArkExe).ProductVersion.Split(' ')[0]);
-                if (version == SupportedSteamVersion) return (Region.Steam, version);
-                else if (version == SupportedKoreaVersion) return (Region.Korea, version);
-                else return (Region.Unknown, version);
-            }
-            return (Region.Unknown, null);
-            var fileName = @"C:\Program Files (x86)\Steam\steamapps\common\Lost Ark\Binaries\Win64\LOSTARK.exe";
-            if (!File.Exists(fileName))
-            {
-                var installLocation = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 1599340")?.GetValue("InstallLocation");
-                if (installLocation != null)
+                var lostArkProcesses = Process.GetProcessesByName("LOSTARK");
+                foreach (var lostArkProcess in lostArkProcesses)
                 {
-                    fileName = Path.Combine(installLocation.ToString(), "Binaries", "Win64", "LOSTARK.exe");
+                    var sb = new StringBuilder(1024);
+                    int bufferLength = sb.Capacity + 1;
+                    QueryFullProcessImageName(lostArkProcess.Handle, 0, sb, ref bufferLength);
+                    var lostArkExe = sb.ToString();
+                    var version = new Version(FileVersionInfo.GetVersionInfo(lostArkExe).ProductVersion.Split(' ')[0]);
+                    if (version == SupportedSteamVersion) return (Region.Steam, version);
+                    else if (version == SupportedKoreaVersion) return (Region.Korea, version);
+                    else return (Region.Unknown, version);
                 }
             }
-            if (File.Exists(fileName)) return (Region.Steam, new Version(FileVersionInfo.GetVersionInfo(fileName).ProductVersion.Split(' ')[0]));
-            else return (Region.Steam, new Version("0.0.0.0"));
-
+            catch { }
+            return (Region.Unknown, null);
         }
     }
 }

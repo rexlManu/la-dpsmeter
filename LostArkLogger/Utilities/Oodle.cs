@@ -22,16 +22,56 @@ namespace LostArkLogger
         const string oodleDll = "oo2net_9_win64.dll";
         public static void Init()
         {
-            var lostArkProcesses = Process.GetProcessesByName("LOSTARK");
-            foreach (var lostArkProcess in lostArkProcesses)
+            if (!File.Exists(oodleDll))
             {
-                var sb = new StringBuilder(1024);
-                int bufferLength = sb.Capacity + 1;
-                VersionCheck.QueryFullProcessImageName(lostArkProcess.Handle, 0, sb, ref bufferLength);
-                var lostArkExe = sb.ToString();
-                var lostArkPath = Path.GetDirectoryName(lostArkExe);
-                SetDllDirectory(lostArkPath);
+                bool copiedDll = false;
+                try
+                {
+                    var lostArkProcesses = Process.GetProcessesByName("LOSTARK");
+                    foreach (var lostArkProcess in lostArkProcesses)
+                    {
+                        var sb = new StringBuilder(1024);
+                        int bufferLength = sb.Capacity + 1;
+                        VersionCheck.QueryFullProcessImageName(lostArkProcess.Handle, 0, sb, ref bufferLength);
+                        var lostArkExe = sb.ToString();
+                        var lostArkPath = Path.GetDirectoryName(lostArkExe);
+                        var fullOodleDll = Path.Combine(lostArkPath.ToString(), oodleDll);
+                        File.Copy(fullOodleDll, oodleDll);
+                        copiedDll = true;
+                        //SetDllDirectory(lostArkPath);
+                    }
+                }
+                catch{}
+
+                if (!copiedDll)
+                {
+                    if (File.Exists(@"C:\Program Files (x86)\Steam\steamapps\common\Lost Ark\Binaries\Win64\" + oodleDll))
+                    {
+                        File.Copy(@"C:\Program Files (x86)\Steam\steamapps\common\Lost Ark\Binaries\Win64\" + oodleDll, oodleDll);
+                        copiedDll = true;
+                    }
+                    else
+                    {
+                        var installLocation = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 1599340")?.GetValue("InstallLocation");
+                        if (installLocation != null)
+                        {
+                            var fullOodleDll = Path.Combine(installLocation.ToString(), "Binaries", "Win64", oodleDll);
+                            if (File.Exists(fullOodleDll))
+                            {
+                                File.Copy(fullOodleDll, oodleDll);
+                                copiedDll = true;
+                            }
+                        }
+                    }
+                }
+
+                if (!copiedDll)
+                {
+                    MessageBox.Show("Please copy oo2net_9_win64 from LostArk\\Binaries\\Win64 directory to " + Environment.CurrentDirectory + "\\", "Missing DLL");
+                    Environment.Exit(0);
+                }
             }
+
             var payload = ObjectSerialize.Decompress(Properties.Settings.Default.Region == Region.Steam ? Properties.Resources.oodle_state_Steam : Properties.Resources.oodle_state_Korea); // to do select correct bin
             initDict = payload.Skip(0x20).Take(0x800000).ToArray();
             var compressorSize = BitConverter.ToInt32(payload, 0x18);
