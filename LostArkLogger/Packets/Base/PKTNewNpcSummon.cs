@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using LoggerLinux.Configuration;
+
 namespace LostArkLogger
 {
     public partial class PKTNewNpcSummon
     {
         public PKTNewNpcSummon(BitReader reader)
         {
-            if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
-            if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
+            if (Configuration.Region == Region.Steam) SteamDecode(reader);
+            if (Configuration.Region == Region.Korea) KoreaDecode(reader);
         }
         public UInt64 OwnerId;
         public NpcStruct npcStruct;

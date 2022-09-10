@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using LoggerLinux.Configuration;
+
 namespace LostArkLogger
 {
     public partial class SkillDamageMoveEvent
     {
         public SkillDamageMoveEvent(BitReader reader)
         {
-            if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
-            if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
+            if (Configuration.Region == Region.Steam) SteamDecode(reader);
+            if (Configuration.Region == Region.Korea) KoreaDecode(reader);
         }
         public SkillDamageEvent skillDamageEvent;
         public UInt64 flag_0;

@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using LoggerLinux.Configuration;
+
 namespace LostArkLogger
 {
     public partial class PKTInitPC
     {
         public PKTInitPC(BitReader reader)
         {
-            if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
-            if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
+            if (Configuration.Region == Region.Steam) SteamDecode(reader);
+            if (Configuration.Region == Region.Korea) KoreaDecode(reader);
         }
         public String Name;
         public UInt64 PlayerId;

@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using LoggerLinux.Configuration;
 
 namespace LostArkLogger
 {
     public class Npc
     {
-        public static Dictionary<String, Tuple<String, String>> Items = (Dictionary<String, Tuple<String, String>>)ObjectSerialize.Deserialize(Properties.Resources.Npc);
-        public static String GetNpcName(UInt32 id)
+        public static Dictionary<String, Tuple<String, String>> Items =
+            (Dictionary<String, Tuple<String, String>>) ObjectSerialize.Deserialize(
+                Configuration.ReadXorBinary("Npc.bin"));        public static String GetNpcName(UInt32 id)
         {
             var npcName = "";
             if (Items.ContainsKey(id.ToString()))
@@ -52,7 +58,6 @@ namespace LostArkLogger
             if (id == 311) return "MaleMartialArtist";
             if (id == 312) return "Striker";
             if (id == 602) return "Artist";
-            if (id == 603) return "Aeromancer";
             return "UnknownClass";
         }
     }

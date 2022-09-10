@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using LoggerLinux.Configuration;
 
 namespace LostArkLogger
 {
@@ -12,7 +13,7 @@ namespace LostArkLogger
         private static uint Port = 13345U;
 
         private readonly HttpClient http = new HttpClient();
-        private readonly ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
+        private readonly ConcurrentQueue<string> messageQueue = new();
         private Thread thread;
 
         public string[] args;
@@ -32,7 +33,7 @@ namespace LostArkLogger
                 Port = uint.Parse(args[PortIndex + 1]);
             }
 
-            Properties.Settings.Default.Region = Region.Steam;
+            Configuration.Region = Region.Steam;
 
             if (RegionIndex != -1)
             {
@@ -43,13 +44,11 @@ namespace LostArkLogger
                 }
                 else if (args[RegionIndex + 1] == "Korea")
                 {
-                    Properties.Settings.Default.Region = Region.Korea;
+                    Configuration.Region = Region.Korea;
                     EnqueueMessage(0, "Using Korea client!");
                 }
             }
-
-            Properties.Settings.Default.Save();
-
+            
             Oodle.Init();
 
             string logPath = "";

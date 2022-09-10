@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LoggerLinux.Configuration;
 
 namespace LostArkLogger
 {
     public class Skill
     {
-        public static Dictionary<Int32, String[]> Items = (Dictionary<Int32, String[]>)ObjectSerialize.Deserialize(Properties.Resources.Skill);
+        public static Dictionary<Int32, String[]> Items = (Dictionary<Int32, String[]>)ObjectSerialize.Deserialize(Configuration.ReadXorBinary("Skill.bin"));
         public static String GetSkillName(UInt32 id, UInt32 subId)
         {
             if (id == 0 && subId == 0) return "Bleed"; // ?? someone fix this

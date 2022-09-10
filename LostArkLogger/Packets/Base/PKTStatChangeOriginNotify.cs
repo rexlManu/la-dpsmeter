@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using LoggerLinux.Configuration;
+
 namespace LostArkLogger
 {
     public partial class PKTStatChangeOriginNotify
     {
         public PKTStatChangeOriginNotify(BitReader reader)
         {
-            if (Properties.Settings.Default.Region == Region.Steam) SteamDecode(reader);
-            if (Properties.Settings.Default.Region == Region.Korea) KoreaDecode(reader);
+            if (Configuration.Region == Region.Steam) SteamDecode(reader);
+            if (Configuration.Region == Region.Korea) KoreaDecode(reader);
         }
         public StatPair StatPairChangedList;
         public StatPair StatPairList;

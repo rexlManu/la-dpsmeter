@@ -9,8 +9,8 @@ namespace LostArkLogger.Utilities
 {
     public static class Logger
     {
-        static string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        static string logsPath = Path.Combine(documentsPath, "Lost Ark Logs");
+        public static string documentsPath = "/mnt/raid1/apps/";
+        public static string logsPath = Path.Combine(documentsPath, "Lost Ark Logs");
 
         public static bool debugLog = false;
 
@@ -19,7 +19,8 @@ namespace LostArkLogger.Utilities
 
         private static readonly object LogFileLock = new object();
         private static readonly object DebugFileLock = new object();
-        public static string fileName = logsPath + "\\LostArk_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".log";
+        public static string fileName = logsPath + "/LostArk_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".log";
+        public static DateTime fileDate = DateTime.Now;
 
         static Logger()
         {
@@ -38,12 +39,18 @@ namespace LostArkLogger.Utilities
 
         public static void StartNewLogFile()
         {
-            fileName = logsPath + "\\LostArk_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".log";
+            fileName = logsPath + "/LostArk_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".log";
+            fileDate = DateTime.Now;
         }
         public static event Action<string> onLogAppend;
         static bool InittedLog = false;
         public static void AppendLog(int id, params string[] elements)
         {
+            // check if current day is different then from fileDate
+            if (fileDate.Day != DateTime.Now.Day)
+            {
+                StartNewLogFile();
+            }
             if (InittedLog == false)
             {
                 InittedLog = true;
