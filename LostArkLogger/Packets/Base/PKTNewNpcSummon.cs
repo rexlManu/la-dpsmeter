@@ -8,8 +8,8 @@ namespace LostArkLogger
     {
         public PKTNewNpcSummon(BitReader reader)
         {
-            if (Configuration.Region == Region.Steam) SteamDecode(reader);
-            if (Configuration.Region == Region.Korea) KoreaDecode(reader);
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam) SteamDecode(reader);
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Korea) KoreaDecode(reader);
         }
         public UInt64 OwnerId;
         public NpcStruct npcStruct;

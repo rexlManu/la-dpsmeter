@@ -8,8 +8,8 @@ namespace LostArkLogger
     {
         public PKTNewPC(BitReader reader)
         {
-            if (Configuration.Region == Region.Steam) SteamDecode(reader);
-            if (Configuration.Region == Region.Korea) KoreaDecode(reader);
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam) SteamDecode(reader);
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Korea) KoreaDecode(reader);
         }
         public subPKTNewPC33 subPKTNewPC33;
         public PCStruct pCStruct;

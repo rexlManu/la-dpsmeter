@@ -23,8 +23,6 @@ public class WebSocketServer
     {
         parser = new Parser();
 
-        parser.InstallListener();
-
         Logger.onLogAppend += (string log) => { EnqueueMessage(log); };
 
         this.thread = new Thread(this.Run);
@@ -123,5 +121,10 @@ public class WebSocketServer
                 Thread.Sleep(1);
             }
         }
+    }
+
+    public void close()
+    {
+        server.Dispose();
     }
 }

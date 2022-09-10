@@ -8,8 +8,8 @@ namespace LostArkLogger
     {
         public PKTPartyStatusEffectRemoveNotify(BitReader reader)
         {
-            if (Configuration.Region == Region.Steam) SteamDecode(reader);
-            if (Configuration.Region == Region.Korea) KoreaDecode(reader);
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam) SteamDecode(reader);
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Korea) KoreaDecode(reader);
         }
         public List<UInt32> StatusEffectIds;
         public UInt64 PartyId;

@@ -55,7 +55,7 @@ namespace LostArkLogger
             statusEffectTracker = new StatusEffectTracker(this);
             statusEffectTracker.OnStatusEffectEnded += Parser_onStatusEffectEnded;
             statusEffectTracker.OnStatusEffectStarted += StatusEffectTracker_OnStatusEffectStarted;
-            ;
+            
             InstallListener();
         }
 
@@ -69,13 +69,13 @@ namespace LostArkLogger
 
                 // Reset all state related to current packet processing here that won't be valid when creating a new listener.
                 fragmentedPacket = new Byte[0];
-                var ipAddressString = Configuration.PCapAddress;
+                var ipAddressString = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapAddress;
                 var ipAddress = System.Net.IPAddress.Parse(ipAddressString);
-                var port = Configuration.PCapPort;
+                var port = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapPort;
                 var remoteInterfaces =
                     PcapInterface.GetAllPcapInterfaces(
                         "rpcap://" + ipAddressString + ":" + port +
-                        "/"+Configuration.PCapInterface, null);
+                        "/"+LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapInterface, null);
                 PcapInterface? iInterface = null;
 
                 foreach (var dev in remoteInterfaces)
@@ -85,7 +85,7 @@ namespace LostArkLogger
                         if (pcapAddress.Addr.ToString().Equals(ipAddressString))
                         {
                             iInterface = dev;
-                            Console.WriteLine("Found device");
+                            Console.WriteLine("Found device: " + dev.Name);
                         }
                     }
                 }
@@ -99,8 +99,19 @@ namespace LostArkLogger
                             {ReadTimeout = 500, Mode = DeviceModes.None}); // todo: 1sec timeout ok?
                         device.Filter = "ip and tcp port 6040";
                         device.OnPacketArrival += new PacketArrivalEventHandler(Device_OnPacketArrival_pcap);
+                        device.OnCaptureStopped += (sender, status) =>
+                        {
+                            Console.WriteLine("Capture stopped: " + status+", restarting in 5 seconds");
+                            device.Close();
+                            
+                            // run method 5 seconds later
+                            Task.Delay(5000).ContinueWith((task) => {
+                                InstallListener();
+                            });
+                        };
                         device.StartCapture();
                         pcap = device;
+                        Console.WriteLine("Listening on " + device.Name);
                     }
                     catch (Exception ex)
                     {
@@ -193,10 +204,10 @@ namespace LostArkLogger
         {
             var opcodeVal = BitConverter.ToUInt16(packets, 2);
             var opCodeString = "";
-            if (Configuration.Region == Region.Steam)
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam)
                 opCodeString = ((OpCodes_Steam) opcodeVal).ToString();
             //if (Properties.Settings.Default.Region == Region.Russia) opCodeString = ((OpCodes_ru)opcodeVal).ToString();
-            if (Configuration.Region == Region.Korea)
+            if (LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Korea)
                 opCodeString = ((OpCodes_Korea) opcodeVal).ToString();
             return (OpCodes) Enum.Parse(typeof(OpCodes), opCodeString);
         }
@@ -208,7 +219,7 @@ namespace LostArkLogger
 
         Byte[] XorTable
         {
-            get { return Configuration.Region == Region.Steam ? XorTableSteam : XorTableKorea; }
+            get { return LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam ? XorTableSteam : XorTableKorea; }
         }
 
         void ProcessPacket(List<Byte> data)

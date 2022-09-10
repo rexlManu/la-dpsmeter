@@ -22,7 +22,7 @@ namespace LostArkLogger
         const string oodleDll = "oo2net_9_win64.dll";
         public static void Init()
         {
-            var payload = ObjectSerialize.Decompress(Configuration.Region == Region.Steam
+            var payload = ObjectSerialize.Decompress(LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam
                 ? Configuration.ReadXorBinary("oodle_state_Steam.bin")
                 : Configuration.ReadXorBinary("oodle_state_Korea.bin")); // to do select correct bin
 

@@ -7,7 +7,7 @@ namespace LostArkLogger
     public class GameMsg
     {
         public static Dictionary<String, String> Items = (Dictionary<String, String>) ObjectSerialize.Deserialize(
-            Configuration.Region == Region.Steam
+            LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam
                 ? Configuration.ReadXorBinary("GameMsg_English.bin")
                 : Configuration.ReadXorBinary("GameMsg.bin"));    }
 }
