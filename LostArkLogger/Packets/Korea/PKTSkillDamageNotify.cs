@@ -7,10 +7,10 @@ namespace LostArkLogger
         public void KoreaDecode(BitReader reader)
         {
             skillDamageEvents = reader.ReadList<SkillDamageEvent>();
-            SourceId = reader.ReadUInt64();
-            SkillEffectId = reader.ReadUInt32();
             b_0 = reader.ReadByte();
+            SkillEffectId = reader.ReadUInt32();
             SkillId = reader.ReadUInt32();
+            SourceId = reader.ReadUInt64();
         }
     }
 }
