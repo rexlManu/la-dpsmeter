@@ -64,6 +64,7 @@ namespace LostArkLogger
         {
             lock (lockPacketProcessing)
             {
+                Console.WriteLine("Trying to connect...");
                 // If we have an installed listener, that needs to go away or we duplicate traffic
                 UninstallListeners();
 
@@ -72,10 +73,25 @@ namespace LostArkLogger
                 var ipAddressString = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapAddress;
                 var ipAddress = System.Net.IPAddress.Parse(ipAddressString);
                 var port = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapPort;
-                var remoteInterfaces =
-                    PcapInterface.GetAllPcapInterfaces(
-                        "rpcap://" + ipAddressString + ":" + port +
-                        "/"+LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapInterface, null);
+                IReadOnlyList<PcapInterface>? remoteInterfaces = null;
+                try
+                {
+                    remoteInterfaces =
+                        PcapInterface.GetAllPcapInterfaces(
+                            "rpcap://" + ipAddressString + ":" + port +
+                            "/"+LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapInterface, null);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error getting remote interfaces: " + e.Message);
+                    Console.WriteLine("Trying to reconnect in 5 seconds...");
+                    // run method 5 seconds later
+                    Task.Delay(5000).ContinueWith((task) => {
+                        InstallListener();
+                    });
+                    return;
+                }
+               
                 PcapInterface? iInterface = null;
 
                 foreach (var dev in remoteInterfaces)

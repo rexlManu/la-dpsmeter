@@ -9,9 +9,11 @@
   <ItemGroup>
     <ProjectReference Include="..\SharpPcap\SharpPcap.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\websocket-sharp\websocket-sharp\websocket-sharp.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fleck" Version="1.2.0" />
     <PackageReference Include="IronSnappy" Version="1.3.0" />
     <PackageReference Include="K4os.Compression.LZ4" Version="1.2.16" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta1" />

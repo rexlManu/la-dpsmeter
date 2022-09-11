@@ -12,6 +12,7 @@ public class Configuration
     public string PCapAddress = "192.168.178.99";
     public string PCapInterface = "";
     public int PCapPort = 1337;
+    public int WebPort = 1338;
 
     public static byte[] ReadXorBinary(string name)
     {

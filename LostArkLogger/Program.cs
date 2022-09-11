@@ -13,15 +13,11 @@ namespace LostArkLogger
 {
     public class Program
     {
-
         public static void Main(string[] args)
         {
             // Shutdown hook
-            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
-            {
-                LostArkLogger.Instance.onExit();
-            };
-            
+            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => { LostArkLogger.Instance.onExit(); };
+
             LostArkLogger.Instance.onLaunch();
             // Hold program open
             while (true)
@@ -34,7 +30,7 @@ namespace LostArkLogger
     public class LostArkLogger
     {
         private static LostArkLogger? _instance = null;
-        
+
         public static LostArkLogger Instance
         {
             get
@@ -43,23 +39,28 @@ namespace LostArkLogger
                 {
                     _instance = new LostArkLogger();
                 }
+
                 return _instance;
             }
         }
 
         public ConfigurationProvider ConfigurationProvider;
-        private WebSocketServer Server;
+        private ApplicationServer? Server;
+
         public void onLaunch()
         {
             this.ConfigurationProvider = new ConfigurationProvider();
-            this.Server = new WebSocketServer();
-            
+            this.Server = new ApplicationServer();
+
             this.Server.Start();
         }
-        
+
         public void onExit()
         {
-            this.Server.close();
+            if (Server != null)
+            {
+                this.Server.close();
+            }
         }
     }
 }
