@@ -38,6 +38,10 @@ You just have to edit the `p-cap-address` to the ip of your pc of running rpcapd
 
 If the container could connect to your machine you can run the container in detached (`-d`) mode.
 
+### DPS Meter
+
+You can find the dps meter at `http://server-ip:1338` (port 1338 in this example).
+
 # WARNING
 This is not endorsed by Smilegate or AGS. Usage of this tool isn't defined by Smilegate or AGS. I do not save your personal identifiable data. Having said that, the .pcap generated can potentially contain sensitive information (specifically, a one-time use token)
   
