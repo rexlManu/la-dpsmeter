@@ -44,5 +44,9 @@
     <None Remove="Resources\xor_Steam.bin" />
     <EmbeddedResource Include="Resources\xor_Steam.bin" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="Copy /Y &quot;$(SolutionDir)bin\*&quot; &quot;$(TargetDir)&quot;" />
+  </Target>
   
 </Project>
