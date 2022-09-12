@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  dps-meter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: 'unless-stopped'
+    container_name: dps-meter
+    volumes:
+      - default.config.yml:/app/config.yml

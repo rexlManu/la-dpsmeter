@@ -9,10 +9,12 @@ public class Configuration
 {
     public Region Region = Region.Steam;
 
+    public string WebHost = "host.docker.internal";
     public string PCapAddress = "192.168.178.99";
     public string PCapInterface = "";
     public int PCapPort = 1337;
     public int WebPort = 1338;
+    public bool UseHttpBridge = false;
 
     public static byte[] ReadXorBinary(string name)
     {

@@ -20,7 +20,7 @@ namespace LostArkLogger
             // Shutdown hook
             AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => { LostArkLogger.Instance.onExit(); };
 
-            LostArkLogger.Instance.onLaunch();
+            LostArkLogger.Instance.onLaunch(args);
             // Hold program open
             while (true)
             {
@@ -49,11 +49,20 @@ namespace LostArkLogger
         public ConfigurationProvider ConfigurationProvider;
         public EventManager EventManager;
         public StateManager StateManager;
+        private HttpBridge? _httpBridge;
         private ApplicationServer? Server;
 
-        public void onLaunch()
+        public void onLaunch(string[] args)
         {
             this.ConfigurationProvider = new ConfigurationProvider();
+
+            if (this.ConfigurationProvider.Configuration.UseHttpBridge)
+            {
+                Console.WriteLine("useHttpBridge is true, starting http bridge");
+                this._httpBridge = new HttpBridge() {args = args};
+                return;
+            }
+
             this.EventManager = new EventManager();
             this.StateManager = new StateManager();
             this.Server = new ApplicationServer();
@@ -63,6 +72,11 @@ namespace LostArkLogger
 
         public void onExit()
         {
+            if (this._httpBridge != null)
+            {
+                this._httpBridge.Stop();
+            }
+
             if (Server != null)
             {
                 this.Server.close();

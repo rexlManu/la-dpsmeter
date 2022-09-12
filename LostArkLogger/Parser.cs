@@ -1,26 +1,10 @@
 ﻿using LostArkLogger.Utilities;
 using SharpPcap;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using LoggerLinux.Configuration;
 using SharpPcap.LibPcap;
 using K4os.Compression.LZ4;
-using LostArkLogger.Utilities;
-using SharpPcap;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Runtime.InteropServices;
-using System.Text;
-using LoggerLinux.Configuration;
 using LostArkLogger.Event.Events;
-using SharpPcap.LibPcap;
 
 
 namespace LostArkLogger
@@ -36,7 +20,7 @@ namespace LostArkLogger
         public event Action onNewZone;
         public event Action beforeNewZone;
         public event Action<int> onPacketTotalCount;
-        public bool use_npcap = false;
+        public bool use_npcap = true;
         private object lockPacketProcessing = new object(); // needed to synchronize UI swapping devices
         public List<Encounter> Encounters = new List<Encounter>();
         public Encounter currentEncounter = new Encounter();
@@ -74,6 +58,9 @@ namespace LostArkLogger
                 var ipAddressString = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapAddress;
                 var ipAddress = System.Net.IPAddress.Parse(ipAddressString);
                 var port = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapPort;
+                
+                Console.WriteLine("Trying to connect to " + ipAddressString + ":" + port);
+                
                 IReadOnlyList<PcapInterface>? remoteInterfaces = null;
                 try
                 {
@@ -82,9 +69,9 @@ namespace LostArkLogger
                             "rpcap://" + ipAddressString + ":" + port +
                             "/" + LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapInterface, null);
                 }
-                catch (Exception e)
+                catch (SharpPcap.PcapException e)
                 {
-                    Console.WriteLine("Error getting remote interfaces: " + e.Message);
+                    Console.WriteLine("Error getting remote interfaces: " + e);
                     Console.WriteLine("Trying to reconnect in 5 seconds...");
                     // run method 5 seconds later
                     Task.Delay(5000).ContinueWith((task) => { InstallListener(); });
@@ -430,7 +417,7 @@ namespace LostArkLogger
                         if (WasKill || WasWipe || opcode == OpCodes.PKTRaidBossKillNotify ||
                             opcode == OpCodes.PKTRaidResult) // if kill or wipe update the raid time duration 
                         {
-                            await Task.Delay(12000);
+                            await Task.Delay(1000);
                             currentEncounter.RaidTime += Duration;
                             foreach (var i in currentEncounter.Entities.Where(e =>
                                          e.Value.Type == Entity.EntityType.Player))
