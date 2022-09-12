@@ -1,6 +1,0 @@
-[submodule "machina"]
-	path = machina
-	url = https://github.com/ravahn/machina
-[submodule "websocket-sharp"]
-	path = websocket-sharp
-	url = git@github.com:sta/websocket-sharp.git
