@@ -32,8 +32,11 @@ You just have to edit the `p-cap-address` to the ip of your pc of running rpcapd
 
 #### Run the container
 
+- `git clone https://github.com/rexlManu/la-dpsmeter.git`
+- `cd la-dpsmeter`
+- `docker build -t la-dpsmeter .`
 ```bash
-  docker run -it -v $(pwd)/config.yml:/app/config.yml -p 1338:1338 rexlmanu/la-dpsmeter:latest
+  docker run -it -v $(pwd)/config.yml:/app/config.yml -p 1338:1338 la-dpsmeter
 ```
 
 If the container could connect to your machine you can run the container in detached (`-d`) mode.
