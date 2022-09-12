@@ -7,7 +7,7 @@ namespace LostArkLogger.State.Socket;
 public class StateSocketHandler : WebSocketBehavior
 {
     private Timer _Timer;
-    int _interval = 10;
+    int _interval = LostArkLogger.Instance.ConfigurationProvider.Configuration.RefreshRate;
 
     protected override void OnOpen()
     {

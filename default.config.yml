@@ -5,3 +5,4 @@ p-cap-port: 9393
 web-host: host.docker.internal
 web-port: 1338
 use-http-bridge: false
+refresh-rate: 250

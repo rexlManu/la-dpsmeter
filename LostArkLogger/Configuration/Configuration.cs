@@ -14,6 +14,7 @@ public class Configuration
     public string PCapInterface = "";
     public int PCapPort = 1337;
     public int WebPort = 1338;
+    public int RefreshRate = 250;
     public bool UseHttpBridge = false;
 
     public static byte[] ReadXorBinary(string name)
