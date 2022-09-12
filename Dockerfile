@@ -30,4 +30,4 @@ COPY --from=build-backend /app/out .
 RUN mkdir -p /app/frontend
 COPY --from=build-overlay /app/dist /app/frontend
 COPY ./bin/* ./
-ENTRYPOINT ["dotnet", "LostArkLogger.dll"]
+ENTRYPOINT ["dotnet", "dps-meter.dll"]
