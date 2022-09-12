@@ -55,6 +55,7 @@ namespace LostArkLogger
         public void onLaunch(string[] args)
         {
             this.ConfigurationProvider = new ConfigurationProvider();
+            this.EventManager = new EventManager();
 
             if (this.ConfigurationProvider.Configuration.UseHttpBridge)
             {
@@ -63,7 +64,6 @@ namespace LostArkLogger
                 return;
             }
 
-            this.EventManager = new EventManager();
             this.StateManager = new StateManager();
             this.Server = new ApplicationServer();
 
