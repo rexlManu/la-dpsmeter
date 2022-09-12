@@ -243,11 +243,11 @@ const parser = new LogParser(true);
 // parser.splitOnPhaseTransition = false;
 // parser.removeOverkillDamage =
 //   settingsStore.settings.damageMeter.functionality.removeOverkillDamage;
-// const socket = new WebSocket(
-//   `ws${window.location.protocol.startsWith("https:") ? "s" : ""}://` +
-//     window.location.host + "/state"
-// );
-const socket = new WebSocket("ws://localhost:1338/state");
+const socket = new WebSocket(
+  `ws${window.location.protocol.startsWith("https:") ? "s" : ""}://` +
+    window.location.host + "/state"
+);
+// const socket = new WebSocket("ws://localhost:1338/state");
 socket.addEventListener("open", () => {
   socket.send("subscribe:PACKET");
 });
