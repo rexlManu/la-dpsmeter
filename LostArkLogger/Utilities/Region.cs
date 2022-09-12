@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace LostArkLogger
+﻿namespace LostArkLogger
 {
     public enum Region : Byte
     {

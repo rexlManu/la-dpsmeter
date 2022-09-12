@@ -1,4 +1,3 @@
-using System;
 namespace LostArkLogger
 {
     public enum OpCodes_Korea : UInt16

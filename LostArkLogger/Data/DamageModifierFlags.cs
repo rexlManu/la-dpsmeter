@@ -1,5 +1,4 @@
-﻿using System;
-namespace LostArkLogger
+﻿namespace LostArkLogger
 {
     [Flags] public enum DamageModifierFlags // to remove
     {

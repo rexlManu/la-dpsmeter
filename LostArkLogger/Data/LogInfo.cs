@@ -1,5 +1,4 @@
-﻿using System;
-namespace LostArkLogger
+﻿namespace LostArkLogger
 {
     public class LogInfo
     {

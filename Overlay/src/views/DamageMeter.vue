@@ -236,28 +236,48 @@ const logoImg = new URL(`../assets/images/logo.png`, import.meta.url).href;
 const settingsStore = useSettingsStore();
 
 const parser = new LogParser(true);
-parser.dontResetOnZoneChange =
-  settingsStore.settings.damageMeter.functionality.dontResetOnZoneChange;
-parser.resetAfterPhaseTransition =
-  settingsStore.settings.damageMeter.functionality.resetAfterPhaseTransition;
+// parser.dontResetOnZoneChange =
+//   settingsStore.settings.damageMeter.functionality.dontResetOnZoneChange;
+// parser.resetAfterPhaseTransition =
+//   settingsStore.settings.damageMeter.functionality.resetAfterPhaseTransition;
 // parser.splitOnPhaseTransition = false;
-parser.removeOverkillDamage =
-  settingsStore.settings.damageMeter.functionality.removeOverkillDamage;
-const socket = new WebSocket(
-  `ws${window.location.protocol.startsWith("https:") ? "s" : ""}://` +
-    window.location.host
-);
+// parser.removeOverkillDamage =
+//   settingsStore.settings.damageMeter.functionality.removeOverkillDamage;
+// const socket = new WebSocket(
+//   `ws${window.location.protocol.startsWith("https:") ? "s" : ""}://` +
+//     window.location.host + "/state"
+// );
+const socket = new WebSocket("ws://localhost:1338/state");
 socket.addEventListener("open", () => {
   socket.send("subscribe:PACKET");
 });
 socket.addEventListener("message", (event) => {
-  const [channelName, content] = event.data.toString().split(":");
+  // const [channelName, content] = event.data.toString().split(":");
+  //
+  // if (channelName == "packet") {
+  //   // base64 decode content
+  //   const packet = Buffer.from(content, "base64").toString("utf8");
+  //   parser.parseLogLine(packet);
+  // }
 
-  if (channelName == "packet") {
-    // base64 decode content
-    const packet = Buffer.from(content, "base64").toString("utf8");
-    parser.parseLogLine(packet);
-  }
+  const state = JSON.parse(event.data);
+
+  sessionState.value = state;
+
+  if (
+    sessionState.value.damageStatistics?.totalDamageDealt &&
+    fightDuration.value > 0
+  )
+    sessionDPS.value = (
+      sessionState.value.damageStatistics.totalDamageDealt /
+      (fightDuration.value / 1000)
+    ).toFixed(0);
+
+  const mobs = Object.values(state.entities);
+  if (mobs.length <= 0) return;
+  const boss = mobs.sort((a, b) => b.maxHp - a.maxHp)[0];
+
+  sessionBoss.value = boss;
 });
 
 const isMinimized = ref(false);
@@ -332,33 +352,33 @@ const sessionBoss = ref(null);
 onMounted(() => {
   settingsStore.initSettings();
 
-  parser.on("state-change", (state) => {
-    sessionState.value = state;
+  // parser.on("state-change", (state) => {
+  //   sessionState.value = state;
 
-    if (
-      sessionState.value.damageStatistics?.totalDamageDealt &&
-      fightDuration.value > 0
-    )
-      sessionDPS.value = (
-        sessionState.value.damageStatistics.totalDamageDealt /
-        (fightDuration.value / 1000)
-      ).toFixed(0);
+  //   if (
+  //     sessionState.value.damageStatistics?.totalDamageDealt &&
+  //     fightDuration.value > 0
+  //   )
+  //     sessionDPS.value = (
+  //       sessionState.value.damageStatistics.totalDamageDealt /
+  //       (fightDuration.value / 1000)
+  //     ).toFixed(0);
 
-    const mobs = Object.values(state.entities);
-    if (mobs.length <= 0) return;
-    const boss = mobs.sort((a, b) => b.maxHp - a.maxHp)[0];
+  //   const mobs = Object.values(state.entities);
+  //   if (mobs.length <= 0) return;
+  //   const boss = mobs.sort((a, b) => b.maxHp - a.maxHp)[0];
 
-    sessionBoss.value = boss;
-  });
+  //   sessionBoss.value = boss;
+  // });
 
-  parser.on("reset-state", (state) => {
-    isFightPaused.value = false;
-    fightPausedOn = 0;
-    fightPausedForMs = 0;
-    damageType.value = "dmg";
-    sessionDPS.value = 0;
-    sessionBoss.value = null;
-  });
+  // parser.on("reset-state", (state) => {
+  //   isFightPaused.value = false;
+  //   fightPausedOn = 0;
+  //   fightPausedForMs = 0;
+  //   damageType.value = "dmg";
+  //   sessionDPS.value = 0;
+  //   sessionBoss.value = null;
+  // });
 
   parser.on("message", (value) => {
     if (value === "new-zone") {

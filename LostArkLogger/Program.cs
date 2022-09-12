@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Principal;
 using LoggerLinux.Configuration;
+using LostArkLogger.Event;
+using LostArkLogger.State;
 using LostArkLogger.Utilities;
 
 namespace LostArkLogger
@@ -45,11 +47,15 @@ namespace LostArkLogger
         }
 
         public ConfigurationProvider ConfigurationProvider;
+        public EventManager EventManager;
+        public StateManager StateManager;
         private ApplicationServer? Server;
 
         public void onLaunch()
         {
             this.ConfigurationProvider = new ConfigurationProvider();
+            this.EventManager = new EventManager();
+            this.StateManager = new StateManager();
             this.Server = new ApplicationServer();
 
             this.Server.Start();

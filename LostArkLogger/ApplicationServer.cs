@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using LostArkLogger.State.Socket;
 using Newtonsoft.Json;
 using WebSocketSharp;
 using WebSocketSharp.Server;
@@ -64,10 +65,12 @@ public class ApplicationServer
 
 
         _Server.AddWebSocketService<SocketHandler>("/");
-        Logger.onLogAppend += (string log) => { EnqueueMessage(log); };
+        _Server.AddWebSocketService<StateSocketHandler>("/state", (handler) => LostArkLogger.Instance.StateManager.AddHandler(handler));
+        
+        // Logger.onLogAppend += (string log) => { EnqueueMessage(log); };
 
-        this.thread = new Thread(this.Run);
-        this.thread.Start();
+        // this.thread = new Thread(this.Run);
+        // this.thread.Start();
 
         _Server.Start();
 
@@ -77,54 +80,6 @@ public class ApplicationServer
             foreach (var path in _Server.WebSocketServices.Paths)
                 Console.WriteLine ("- {0}", path);
         }
-        
-        // server.Start(connection =>
-        // {
-        //     connection.OnOpen = () => { Connections.Add(connection); };
-        //     connection.OnClose = () => { Connections.Remove(connection); };
-        //     connection.OnMessage = message =>
-        //     {
-        //         if (!message.Contains(":")) return;
-        //         var parts = message.Split(":");
-        //         var channelName = parts[0];
-        //         if (channelName == "logs")
-        //         {
-        //             // list all file names from directory Logger.logsPath
-        //             var files = System.IO.Directory.GetFiles(Logger.logsPath);
-        //             var fileNames = new List<string>();
-        //             foreach (var file in files)
-        //             {
-        //                 fileNames.Add(System.IO.Path.GetFileName(file));
-        //             }
-        //
-        //             var answer = JsonConvert.SerializeObject(fileNames);
-        //             // base64 encode answer
-        //             var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(answer));
-        //             connection.Send("logs:" + base64);
-        //             return;
-        //         }
-        //
-        //         if (channelName == "download")
-        //         {
-        //             // base64 decode message
-        //             var fileName = Convert.FromBase64String(parts[1]);
-        //             var filePath = System.IO.Path.Combine(Logger.logsPath, Encoding.UTF8.GetString(fileName));
-        //             if (!System.IO.File.Exists(filePath)) return;
-        //             // go though all lines in file and send them to client
-        //             var lines = System.IO.File.ReadAllLines(filePath);
-        //             foreach (var line in lines)
-        //             {
-        //                 // base64 encode line
-        //                 var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(line));
-        //                 connection.Send("log:" + base64);
-        //             }
-        //             // send a uwu as last message to indicate end of file
-        //             connection.Send("log:uwu");
-        //             return;
-        //         }
-        //         // var data = Convert.FromBase64String(parts[1]);
-        //     };
-        // });
     }
 
     private void Publish(string message)

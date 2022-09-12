@@ -19,6 +19,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 using LoggerLinux.Configuration;
+using LostArkLogger.Event.Events;
 using SharpPcap.LibPcap;
 
 
@@ -55,7 +56,7 @@ namespace LostArkLogger
             statusEffectTracker = new StatusEffectTracker(this);
             statusEffectTracker.OnStatusEffectEnded += Parser_onStatusEffectEnded;
             statusEffectTracker.OnStatusEffectStarted += StatusEffectTracker_OnStatusEffectStarted;
-            
+
             InstallListener();
         }
 
@@ -79,19 +80,17 @@ namespace LostArkLogger
                     remoteInterfaces =
                         PcapInterface.GetAllPcapInterfaces(
                             "rpcap://" + ipAddressString + ":" + port +
-                            "/"+LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapInterface, null);
+                            "/" + LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapInterface, null);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("Error getting remote interfaces: " + e.Message);
                     Console.WriteLine("Trying to reconnect in 5 seconds...");
                     // run method 5 seconds later
-                    Task.Delay(5000).ContinueWith((task) => {
-                        InstallListener();
-                    });
+                    Task.Delay(5000).ContinueWith((task) => { InstallListener(); });
                     return;
                 }
-               
+
                 PcapInterface? iInterface = null;
 
                 foreach (var dev in remoteInterfaces)
@@ -117,13 +116,11 @@ namespace LostArkLogger
                         device.OnPacketArrival += new PacketArrivalEventHandler(Device_OnPacketArrival_pcap);
                         device.OnCaptureStopped += (sender, status) =>
                         {
-                            Console.WriteLine("Capture stopped: " + status+", restarting in 5 seconds");
+                            Console.WriteLine("Capture stopped: " + status + ", restarting in 5 seconds");
                             device.Close();
-                            
+
                             // run method 5 seconds later
-                            Task.Delay(5000).ContinueWith((task) => {
-                                InstallListener();
-                            });
+                            Task.Delay(5000).ContinueWith((task) => { InstallListener(); });
                         };
                         device.StartCapture();
                         pcap = device;
@@ -156,6 +153,18 @@ namespace LostArkLogger
                     Logger.AppendLog(3, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, "0",
                         sourceEntity.ClassName, "1", "0", "0");
                     currentEncounter.LoggedEntities.TryAdd(sourceEntity.EntityId, true);
+
+                    LostArkLogger.Instance.EventManager.Raise(new NewEntityEvent(State.Entity.CreateEntity()
+                        .Modify(entity =>
+                        {
+                            entity.Id = sourceEntity.EntityId.ToString("X");
+                            entity.Name = sourceEntity.Name;
+                            entity.Class = sourceEntity.ClassName;
+                            entity.GearScore = 1;
+                            entity.IsPlayer = true;
+
+                            return entity;
+                        })));
                 }
             }
 
@@ -184,6 +193,21 @@ namespace LostArkLogger
                 Skill.GetSkillName(skillId), skillEffectId.ToString(), Skill.GetSkillEffectName(skillEffectId),
                 targetEntity.EntityId.ToString("X"), targetEntity.Name, dmgEvent.Damage.ToString(),
                 dmgEvent.Modifier.ToString("X"), dmgEvent.CurHp.ToString(), dmgEvent.MaxHp.ToString());
+
+            LostArkLogger.Instance.EventManager.Raise(new EntityDamageEvent(
+                sourceEntity.EntityId.ToString("X"),
+                sourceEntity.Name,
+                Skill.GetSkillName(skillId),
+                Skill.GetSkillEffectName(skillEffectId),
+                targetEntity.EntityId.ToString("X"),
+                targetEntity.Name,
+                skillId,
+                skillEffectId,
+                dmgEvent.Damage,
+                dmgEvent.Modifier,
+                dmgEvent.CurHp,
+                dmgEvent.MaxHp
+            ));
         }
 
         void ProcessSkillDamage(PKTSkillDamageNotify damage)
@@ -235,7 +259,12 @@ namespace LostArkLogger
 
         Byte[] XorTable
         {
-            get { return LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam ? XorTableSteam : XorTableKorea; }
+            get
+            {
+                return LostArkLogger.Instance.ConfigurationProvider.Configuration.Region == Region.Steam
+                    ? XorTableSteam
+                    : XorTableKorea;
+            }
         }
 
         void ProcessPacket(List<Byte> data)
@@ -284,7 +313,8 @@ namespace LostArkLogger
                         var buffer = new byte[0x11ff2];
                         var result = LZ4Codec.Decode(payload, 0, payload.Length, buffer, 0, 0x11ff2);
                         if (result < 1) throw new Exception("LZ4 output buffer too small");
-                        payload = buffer.Take(result).ToArray(); //TODO: check LZ4 payload and see if we should skip some data
+                        payload = buffer.Take(result)
+                            .ToArray(); //TODO: check LZ4 payload and see if we should skip some data
                         break;
                     case 2: //Snappy
                         //https://github.com/robertvazan/snappy.net
@@ -300,9 +330,10 @@ namespace LostArkLogger
                 }
 
                 // write packets for analyzing, bypass common, useless packets
-                // if (opcode != OpCodes.PKTMoveError && opcode != OpCodes.PKTMoveNotify && opcode != OpCodes.PKTMoveNotifyList && opcode != OpCodes.PKTTransitStateNotify && opcode != OpCodes.PKTPing && opcode != OpCodes.PKTPong)
-                //    Console.WriteLine(opcode + " : " + opcode.ToString("X") + " : " + BitConverter.ToString(payload));
-
+                // if (opcode != OpCodes.PKTMoveError && opcode != OpCodes.PKTMoveNotify &&
+                //     opcode != OpCodes.PKTMoveNotifyList && opcode != OpCodes.PKTTransitStateNotify &&
+                //     opcode != OpCodes.PKTPing && opcode != OpCodes.PKTPong)
+                
                 /* Uncomment for auction house accessory sniffing
                 if (opcode == OpCodes.PKTAuctionSearchResult)
                 {
@@ -354,13 +385,15 @@ namespace LostArkLogger
                         {
                             Time = DateTime.Now,
                             SourceEntity = entity,
-                            DestinationEntity = entity, //projectiles don't have destination, but can't be null causes exception getting encounter name
+                            DestinationEntity =
+                                entity, //projectiles don't have destination, but can't be null causes exception getting encounter name
                             SkillName = BattleItem.GetBattleItemName(projectile.SkillId),
                             SkillId = projectile.SkillId,
                             BattleItem = battleitem
                         };
                         currentEncounter.Infos.Add(log);
-                        Logger.AppendLog(15, projectile.OwnerId.ToString("X"), entity.Name, projectile.SkillId.ToString(), BattleItem.GetBattleItemName(projectile.SkillId));
+                        Logger.AppendLog(15, projectile.OwnerId.ToString("X"), entity.Name,
+                            projectile.SkillId.ToString(), BattleItem.GetBattleItemName(projectile.SkillId));
                     }
                 }
                 else if (opcode == OpCodes.PKTInitEnv)
@@ -383,6 +416,8 @@ namespace LostArkLogger
 
                     onNewZone?.Invoke();
                     Logger.AppendLog(1, env.PlayerId.ToString("X"));
+
+                    LostArkLogger.Instance.EventManager.Raise(new EnterNewZoneEvent(env.PlayerId.ToString("X")));
                 }
                 else if (opcode == OpCodes.PKTRaidBossKillNotify //Packet sent for boss kill, wipe or start
                          || opcode == OpCodes.PKTTriggerBossBattleStatus
@@ -454,6 +489,9 @@ namespace LostArkLogger
                         if (opcode == OpCodes.PKTRaidBossKillNotify) phaseCode = "1";
                         else if (opcode == OpCodes.PKTTriggerBossBattleStatus) phaseCode = "2";
                         Logger.AppendLog(2, phaseCode);
+
+                        LostArkLogger.Instance.EventManager.Raise(
+                            new PhaseTransitionEvent(PhaseTransitionEvent.GetPhaseCode(phaseCode)));
                     });
                 }
                 else if (opcode == OpCodes.PKTInitPC)
@@ -486,6 +524,24 @@ namespace LostArkLogger
                             pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)]
                                 .ToString());
                         currentEncounter.LoggedEntities.TryAdd(pc.PlayerId, true);
+
+                        LostArkLogger.Instance.EventManager.Raise(
+                            new NewEntityEvent(State.Entity.CreateEntity().Modify(entity =>
+                            {
+                                entity.Id = pc.PlayerId.ToString("X");
+                                entity.Name = pc.Name;
+                                entity.ClassId = pc.ClassId;
+                                entity.Class = Npc.GetPcClass(pc.ClassId);
+                                entity.Level = pc.Level;
+                                entity.GearScore = pc.GearLevel;
+                                entity.CurrentHp =
+                                    pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
+                                entity.MaxHp =
+                                    pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)];
+                                entity.IsPlayer = true;
+                                return entity;
+                            }))
+                        );
                     }
                 }
                 else if (opcode == OpCodes.PKTNewPC)
@@ -520,6 +576,24 @@ namespace LostArkLogger
                             pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)]
                                 .ToString());
                         currentEncounter.LoggedEntities.TryAdd(pc.PlayerId, true);
+
+                        LostArkLogger.Instance.EventManager.Raise(
+                            new NewEntityEvent(State.Entity.CreateEntity().Modify(entity =>
+                            {
+                                entity.Id = pc.PlayerId.ToString("X");
+                                entity.Name = temp.Name;
+                                entity.ClassId = pc.ClassId;
+                                entity.Class = Npc.GetPcClass(pc.ClassId);
+                                entity.Level = pc.Level;
+                                entity.GearScore = pc.GearLevel;
+                                entity.CurrentHp =
+                                    pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
+                                entity.MaxHp =
+                                    pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)];
+                                entity.IsPlayer = true;
+                                return entity;
+                            }))
+                        );
                     }
                 }
                 else if (opcode == OpCodes.PKTNewNpc)
@@ -535,6 +609,22 @@ namespace LostArkLogger
                     Logger.AppendLog(4, npc.NpcId.ToString("X"), npc.NpcType.ToString(), Npc.GetNpcName(npc.NpcType),
                         npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)].ToString(),
                         npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)].ToString());
+
+                    LostArkLogger.Instance.EventManager.Raise(
+                        new NewEntityEvent(State.Entity.CreateEntity().Modify(entity =>
+                        {
+                            entity.Id = npc.NpcId.ToString("X");
+                            entity.Name = Npc.GetNpcName(npc.NpcType);
+                            entity.NpcId = npc.NpcType;
+                            entity.IsPlayer = false;
+                            entity.CurrentHp =
+                                npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
+                            entity.MaxHp =
+                                npc.statPair.Value[npc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)];
+                            return entity;
+                        }))
+                    );
+
                     statusEffectTracker.NewNpc(npcPacket);
                 }
                 else if (opcode == OpCodes.PKTRemoveObject)
@@ -549,7 +639,12 @@ namespace LostArkLogger
                     Logger.AppendLog(5, death.TargetId.ToString("X"),
                         currentEncounter.Entities.GetOrAdd(death.TargetId).Name, death.SourceId.ToString("X"),
                         currentEncounter.Entities.GetOrAdd(death.SourceId).Name);
-
+                    LostArkLogger.Instance.EventManager.Raise(new EntityDeathEvent(
+                        death.TargetId.ToString("X"),
+                        currentEncounter.Entities.GetOrAdd(death.TargetId).Name,
+                        death.SourceId.ToString("X"),
+                        currentEncounter.Entities.GetOrAdd(death.SourceId).Name
+                    ));
                     DateTime DeathTime = DateTime.Now;
                     TimeSpan timeAlive = DeathTime.Subtract(currentEncounter.Start);
                     if (currentEncounter.Entities.GetOrAdd(death.TargetId).Type ==
@@ -577,6 +672,13 @@ namespace LostArkLogger
                     Logger.AppendLog(6, skill.SourceId.ToString("X"),
                         currentEncounter.Entities.GetOrAdd(skill.SourceId).Name, skill.SkillId.ToString(),
                         Skill.GetSkillName(skill.SkillId));
+
+                    LostArkLogger.Instance.EventManager.Raise(new SkillStartEvent(
+                        skill.SourceId.ToString("X"),
+                        currentEncounter.Entities.GetOrAdd(skill.SourceId).Name,
+                        Skill.GetSkillName(skill.SkillId),
+                        skill.SkillId
+                    ));
                 }
                 else if (opcode == OpCodes.PKTSkillStageNotify)
                 {
@@ -600,6 +702,13 @@ namespace LostArkLogger
                     Logger.AppendLog(7, skill.SourceId.ToString("X"),
                         currentEncounter.Entities.GetOrAdd(skill.SourceId).Name, skill.SkillId.ToString(),
                         Skill.GetSkillName(skill.SkillId), skill.Stage.ToString());
+
+                    LostArkLogger.Instance.EventManager.Raise(new SkillStageEvent(
+                        skill.SourceId.ToString("X"),
+                        currentEncounter.Entities.GetOrAdd(skill.SourceId).Name,
+                        Skill.GetSkillName(skill.SkillId),
+                        skill.SkillId, skill.Stage
+                    ));
                 }
                 else if (opcode == OpCodes.PKTSkillDamageNotify)
                     ProcessSkillDamage(new PKTSkillDamageNotify(new BitReader(payload)));
@@ -621,6 +730,13 @@ namespace LostArkLogger
                     Logger.AppendLog(9, entity.EntityId.ToString("X"), entity.Name,
                         health.StatPairChangedList.Value[0].ToString(),
                         health.StatPairChangedList.Value[0].ToString()); // need to lookup cached max hp??
+
+                    LostArkLogger.Instance.EventManager.Raise(
+                        new EntityHealEvent(
+                            entity.EntityId.ToString("X"),
+                            entity.Name,
+                            health.StatPairChangedList.Value[0]
+                        ));
                 }
                 else if (opcode == OpCodes.PKTStatusEffectAddNotify) // shields included
                 {
@@ -638,8 +754,12 @@ namespace LostArkLogger
                             BattleItem = battleItem
                         };
                         currentEncounter.Infos.Add(log);
-                        Logger.AppendLog(15, statusEffect.statusEffectData.SourceId.ToString("X"), currentEncounter.Entities.GetOrAdd(statusEffect.statusEffectData.SourceId).Name, statusEffect.statusEffectData.StatusEffectId.ToString(), BattleItem.GetBattleItemName(statusEffect.statusEffectData.StatusEffectId));
+                        Logger.AppendLog(15, statusEffect.statusEffectData.SourceId.ToString("X"),
+                            currentEncounter.Entities.GetOrAdd(statusEffect.statusEffectData.SourceId).Name,
+                            statusEffect.statusEffectData.StatusEffectId.ToString(),
+                            BattleItem.GetBattleItemName(statusEffect.statusEffectData.StatusEffectId));
                     }
+
                     statusEffectTracker.Add(statusEffect);
                     var amount = statusEffect.statusEffectData.hasValue == 1
                         ? BitConverter.ToUInt32(statusEffect.statusEffectData.Value, 0)
@@ -716,7 +836,7 @@ namespace LostArkLogger
 
         UInt32 currentIpAddr = 0xdeadbeef;
         int loggedPacketCount = 0;
-        
+
 
         void Device_OnPacketArrival_pcap(object sender, PacketCapture evt)
         {
@@ -780,15 +900,38 @@ namespace LostArkLogger
             Logger.AppendLog(11, statusEffect.StatusEffectId.ToString("X"),
                 SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId), statusEffect.TargetId.ToString("X"),
                 currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name);
+
+            LostArkLogger.Instance.EventManager.Raise(new EntityCounterAttackEvent(
+                statusEffect.StatusEffectId.ToString("X"),
+                SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId),
+                statusEffect.TargetId.ToString("X"),
+                currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name,
+                statusEffect.StatusEffectId.ToString("X"),
+                SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId)
+            ));
         }
 
         private void StatusEffectTracker_OnStatusEffectStarted(StatusEffect statusEffect)
         {
-            Logger.AppendLog(10, statusEffect.SourceId.ToString("X"),
+            Logger.AppendLog(10,
+                statusEffect.SourceId.ToString("X"), //2id
+                currentEncounter.Entities.GetOrAdd(statusEffect.SourceId).Name, //3name
+                statusEffect.StatusEffectId.ToString("X"), //4buffid
+                SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId), //5 buffname
+                statusEffect.TargetId.ToString("X"), //6 isnew
+                currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name, //7
+                statusEffect.Value.ToString() // 8
+            );
+
+            LostArkLogger.Instance.EventManager.Raise(new EntityBuffEvent(
+                statusEffect.SourceId.ToString("X"),
                 currentEncounter.Entities.GetOrAdd(statusEffect.SourceId).Name,
-                statusEffect.StatusEffectId.ToString("X"), SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId),
-                statusEffect.TargetId.ToString("X"), currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name,
-                statusEffect.Value.ToString());
+                statusEffect.StatusEffectId.ToString("X"),
+                SkillBuff.GetSkillBuffName(statusEffect.StatusEffectId),
+                statusEffect.TargetId.ToString("X"),
+                currentEncounter.Entities.GetOrAdd(statusEffect.TargetId).Name,
+                statusEffect.Value
+            ));
         }
 
         private void Parser_onNewZone()

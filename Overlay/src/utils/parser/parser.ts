@@ -5,7 +5,7 @@ import { healingSkills, HitFlag, HitOption } from './constants';
 import * as LogLines from './log-lines';
 import { tryParseInt } from './util';
 
-interface Game {
+interface Game  {
   startedOn: number;
   lastCombatPacket: number;
   fightStartedOn: number;
@@ -341,7 +341,7 @@ export class LogParser extends EventEmitter {
 
     if (this.isLive) {
       if (this.dontResetOnZoneChange === false && this.resetTimer == null) {
-        if (this.debugLines) {
+        if (this.debugLines) {  
           this.emit("log", {
             type: "debug",
             message: `Setting a reset timer`,
