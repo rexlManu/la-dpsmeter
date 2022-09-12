@@ -4,6 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>DPS Meter</Title>
+    <Authors>Emmanuel Lampe</Authors>
+    <PackageProjectUrl>https://github.com/rexlmanu/dps-meter</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/rexlmanu/dps-meter/license.txt</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/rexlmanu/dps-meter</RepositoryUrl>
+    <AssemblyName>dps-meter</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
