@@ -1,18 +1,20 @@
 <template>
   <tr v-if="Object.keys(player.skills).length > 1">
-    <td class="td-class-img">
+    <td oncontextmenu="return false;" class="td-class-img">
       <img :src="getClassImage(player.class)" />
     </td>
-    <td class="ellipsis">
+    <td oncontextmenu="return false;" class="ellipsis">
       <span>{{ entryName }}</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.deathTime.enabled"
       class="text-center"
     >
       {{ deathTime }}
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.damage.enabled"
       class="text-center"
     >
@@ -22,6 +24,7 @@
       </span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.damagePercent.enabled"
       class="text-center"
     >
@@ -39,6 +42,7 @@
       <span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.dps.enabled"
       class="text-center"
     >
@@ -48,6 +52,7 @@
       </span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="
         damageType === 'dmg' &&
         settingsStore.settings.damageMeter.tabs.critRate.enabled
@@ -58,6 +63,7 @@
       <span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="
         damageType === 'dmg' &&
         settingsStore.settings.damageMeter.tabs.faRate.enabled
@@ -72,6 +78,7 @@
       <span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="
         damageType === 'dmg' &&
         settingsStore.settings.damageMeter.tabs.baRate.enabled
@@ -86,6 +93,7 @@
       <span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="
         damageType === 'dmg' &&
         settingsStore.settings.damageMeter.tabs.counterCount.enabled
@@ -95,6 +103,7 @@
       {{ player.hits.counter }}
     </td>
     <div
+      oncontextmenu="return false;"
       class="player-bar"
       :style="`
               width: ${
@@ -157,7 +166,7 @@ const entryName = computed(() => {
       props.player.gearScore &&
       props.player.gearScore != 0
     ) {
-      res += props.player.gearScore;
+      res += props.player.gearScore.toFixed(0);
       hasGearScore = true;
     }
 

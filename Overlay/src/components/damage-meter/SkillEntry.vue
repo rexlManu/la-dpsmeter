@@ -1,10 +1,13 @@
 <template>
   <tr>
-    <td class="td-skill-img">
+    <td oncontextmenu="return false;" class="td-skill-img">
       <img :src="getSkillImage(skill.id)" />
     </td>
-    <td class="ellipsis">{{ getSkillName(skill) }}</td>
+    <td oncontextmenu="return false;" class="ellipsis">
+      {{ getSkillName(skill) }}
+    </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.damage.enabled"
       class="text-center"
     >
@@ -14,12 +17,14 @@
       </span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.damagePercent.enabled"
       class="text-center"
     >
       {{ skill.damagePercent }}<span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.dps.enabled"
       class="text-center"
     >
@@ -29,6 +34,7 @@
       </span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.critRate.enabled"
       class="text-center"
     >
@@ -40,6 +46,7 @@
       <span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.faRate.enabled"
       class="text-center"
     >
@@ -51,6 +58,7 @@
       <span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.baRate.enabled"
       class="text-center"
     >
@@ -62,6 +70,7 @@
       <span class="ex">%</span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.maxDmg.enabled"
       class="text-center"
     >
@@ -71,6 +80,7 @@
       </span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.avgDmg.enabled"
       class="text-center"
     >
@@ -80,12 +90,14 @@
       </span>
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.totalHits.enabled"
       class="text-center"
     >
       {{ skill.hits.total }}
     </td>
     <td
+      oncontextmenu="return false;"
       v-if="settingsStore.settings.damageMeter.tabs.hpm.enabled"
       class="text-center"
     >
@@ -95,6 +107,7 @@
       </span>
     </td>
     <div
+      oncontextmenu="return false;"
       class="player-bar"
       :style="`
               width:${skill.relativePercent}%;
@@ -147,11 +160,14 @@ const avgDamage = computed(() => {
 function getSkillImage(id) {
   if (id > 99999) return getSkillImage(id / 10);
   const s = getSkill(id);
-  if (id % 5 && !(s?.icon)) return getSkillImage(id - id % 5);
+  if (id % 5 && !s?.icon) return getSkillImage(id - (id % 5));
 
   if (s != null && skillHasIcon(s)) {
     return new URL(
-      `../../assets/images/skills/${s.id}_${(s?.display ?? s.name).replace(":", "-")}.png`,
+      `../../assets/images/skills/${s.id}_${(s?.display ?? s.name).replace(
+        ":",
+        "-"
+      )}.png`,
       import.meta.url
     ).href;
   }
@@ -164,17 +180,21 @@ function getSkillName(skill) {
   const s = getSkill(skill.id);
 
   if (s != null) {
-    if ('display' in s) return s.display;
+    if ("display" in s) return s.display;
   }
   return skill.name;
 }
 
 function skillHasIcon(s) {
-    if (s.name.startsWith("Basic Attack") || s?.display?.startsWith("Basic Attack") || !(s?.icon ?? true))
-      return false;
-    return true;
-  }
-  function getSkill(id) {
-    return skills.find((k) => k.id == id);
+  if (
+    s.name.startsWith("Basic Attack") ||
+    s?.display?.startsWith("Basic Attack") ||
+    !(s?.icon ?? true)
+  )
+    return false;
+  return true;
+}
+function getSkill(id) {
+  return skills.find((k) => k.id == id);
 }
 </script>

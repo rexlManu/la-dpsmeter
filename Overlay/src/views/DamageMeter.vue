@@ -64,22 +64,39 @@
             v-if="settingsStore.settings.damageMeter.header.damage.enabled"
             style="margin-right: 12px"
           >
-            Total DMG
-            {{ numberFormat(sessionState.damageStatistics.totalDamageDealt) }}
+            DMG
+            {{
+              abbreviateNumber(
+                sessionState.damageStatistics.totalDamageDealt
+              )[0]
+            }}{{
+              abbreviateNumber(
+                sessionState.damageStatistics.totalDamageDealt
+              )[1]
+            }}
           </span>
           <span
             v-if="settingsStore.settings.damageMeter.header.dps.enabled"
             style="margin-right: 12px"
           >
-            Total DPS
-            {{ numberFormat(sessionDPS) }}
+            DPS
+            {{ abbreviateNumber(sessionDPS)[0]
+            }}{{ abbreviateNumber(sessionDPS)[1] }}
           </span>
           <span
             v-if="settingsStore.settings.damageMeter.header.tank.enabled"
             style="margin-right: 12px"
           >
-            Total TNK
-            {{ numberFormat(sessionState.damageStatistics.totalDamageTaken) }}
+            TNK
+            {{
+              abbreviateNumber(
+                sessionState.damageStatistics.totalDamageTaken
+              )[0]
+            }}{{
+              abbreviateNumber(
+                sessionState.damageStatistics.totalDamageTaken
+              )[1]
+            }}
           </span>
           <span
             v-if="
@@ -91,10 +108,23 @@
             "
             style="margin-right: 12px"
           >
-            Boss HP
-            {{ numberFormat(sessionBoss.currentHp) }} /
-            {{ numberFormat(sessionBoss.maxHp) }} ({{
-              Math.floor((sessionBoss.currentHp / sessionBoss.maxHp) * 100)
+            HP
+            {{
+              abbreviateNumber(
+                sessionBoss.currentHp < 0 ? 0 : sessionBoss.currentHp
+              )[0]
+            }}{{
+              abbreviateNumber(
+                sessionBoss.currentHp < 0 ? 0 : sessionBoss.currentHp
+              )[1]
+            }}
+            / {{ abbreviateNumber(sessionBoss.maxHp)[0]
+            }}{{ abbreviateNumber(sessionBoss.maxHp)[1] }} ({{
+              Math.floor(
+                ((sessionBoss.currentHp < 0 ? 0 : sessionBoss.currentHp) /
+                  sessionBoss.maxHp) *
+                  100
+              )
             }}%)
           </span>
         </div>
@@ -199,6 +229,7 @@ import { onMounted, ref, watch } from "vue";
 import {
   numberFormat,
   millisToMinutesAndSeconds,
+  abbreviateNumber,
 } from "../utils/number-helpers.js";
 import { sleep } from "../utils/sleep.js";
 import html2canvas from "html2canvas";

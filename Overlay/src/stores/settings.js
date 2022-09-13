@@ -90,7 +90,7 @@ export const useSettingsStore = defineStore("settings", {
           },
           deathTime: {
             name: "Death Time",
-            enabled: true,
+            enabled: false,
           },
           damagePercent: {
             name: "D% (Damage Percent)",
@@ -106,11 +106,11 @@ export const useSettingsStore = defineStore("settings", {
           },
           faRate: {
             name: "Front Attack Rate",
-            enabled: true,
+            enabled: false,
           },
           baRate: {
             name: "Back Attack Rate",
-            enabled: true,
+            enabled: false,
           },
           counterCount: {
             name: "Counter Count",
