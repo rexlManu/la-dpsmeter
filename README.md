@@ -29,7 +29,7 @@ If you have access to multiple computers, you have the following options:
 This is the most risky option, but it's the easiest to setup.
 You just have to download the binaries from the [releases](
 http://github.com/rexlmanu/dps-meter/releases) page and run the
-`LostArkLogger.exe` file.
+`dps-meter.exe` file.
 
 #### Run it in a docker container
 
@@ -73,7 +73,7 @@ Change the `p-cap-address` to the ip address of your main computer.
 You can find out your ip address by running `ipconfig` in a command prompt.
 And change the `p-cap-port` to the port you used in the `start-winpcap.bat` file.
 
-You can run the `LostArkLogger.exe` file to start the tool.
+You can run the `dps-meter.exe` file to start the tool.
 
 #### Install dps-meter on linux
 
@@ -82,7 +82,7 @@ Copy the [default.config.yml](default.config.yml) file to the same directory and
 
 Change the `p-cap-address` to the ip address of your main computer.
 
-You can start the tool by running `dotnet LostArkLogger.dll`.
+You can start the tool by running `dotnet dps-meter.dll`.
 
 #### Run it in a docker container
 
