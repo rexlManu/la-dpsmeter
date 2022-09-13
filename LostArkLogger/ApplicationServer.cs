@@ -30,6 +30,7 @@ public class ApplicationServer
         
         
         this._Server = new HttpServer(LostArkLogger.Instance.ConfigurationProvider.Configuration.WebPort);
+        this._Server.KeepClean = false;
         this._Server.DocumentRootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/frontend";
         
         this._Server.OnGet += (sender, e) => {
