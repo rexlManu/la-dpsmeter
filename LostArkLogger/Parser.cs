@@ -317,9 +317,12 @@ namespace LostArkLogger
                 }
 
                 // write packets for analyzing, bypass common, useless packets
-                // if (opcode != OpCodes.PKTMoveError && opcode != OpCodes.PKTMoveNotify &&
-                //     opcode != OpCodes.PKTMoveNotifyList && opcode != OpCodes.PKTTransitStateNotify &&
-                //     opcode != OpCodes.PKTPing && opcode != OpCodes.PKTPong)
+                if (opcode != OpCodes.PKTMoveError && opcode != OpCodes.PKTMoveNotify &&
+                    opcode != OpCodes.PKTMoveNotifyList && opcode != OpCodes.PKTTransitStateNotify &&
+                    opcode != OpCodes.PKTPing && opcode != OpCodes.PKTPong)
+                {
+                    // Console.WriteLine(opcode + " : " + opcode.ToString("X") + " : " + BitConverter.ToString(payload));
+                }
                 
                 /* Uncomment for auction house accessory sniffing
                 if (opcode == OpCodes.PKTAuctionSearchResult)
@@ -520,7 +523,7 @@ namespace LostArkLogger
                                 entity.ClassId = pc.ClassId;
                                 entity.Class = Npc.GetPcClass(pc.ClassId);
                                 entity.Level = pc.Level;
-                                entity.GearScore = Convert.ToUInt32(BitConverter.ToSingle(BitConverter.GetBytes(pc.GearLevel), 0).ToString("0.##"));
+                                entity.GearScore = Convert.ToUInt32(gearScore);
                                 entity.CurrentHp =
                                     pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
                                 entity.MaxHp =
@@ -563,7 +566,7 @@ namespace LostArkLogger
                             pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)]
                                 .ToString());
                         currentEncounter.LoggedEntities.TryAdd(pc.PlayerId, true);
-
+                        
                         LostArkLogger.Instance.EventManager.Raise(
                             new NewEntityEvent(State.Entity.CreateEntity().Modify(entity =>
                             {
@@ -572,7 +575,7 @@ namespace LostArkLogger
                                 entity.ClassId = pc.ClassId;
                                 entity.Class = Npc.GetPcClass(pc.ClassId);
                                 entity.Level = pc.Level;
-                                entity.GearScore = pc.GearLevel;
+                                entity.GearScore = Convert.ToUInt32(gearScore);
                                 entity.CurrentHp =
                                     pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
                                 entity.MaxHp =
