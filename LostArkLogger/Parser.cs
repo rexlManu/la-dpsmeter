@@ -523,7 +523,16 @@ namespace LostArkLogger
                                 entity.ClassId = pc.ClassId;
                                 entity.Class = Npc.GetPcClass(pc.ClassId);
                                 entity.Level = pc.Level;
-                                entity.GearScore = Convert.ToUInt32(gearScore);
+                                try
+                                {
+                                    entity.GearScore = Convert.ToUInt32(gearScore);
+                                }
+                                catch (FormatException e)
+                                {
+                                    // The gear score is not a number, so we set it to 1
+                                    // This is a special case and shouldn't happen
+                                    entity.GearScore = 1;
+                                }
                                 entity.CurrentHp =
                                     pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
                                 entity.MaxHp =
@@ -575,7 +584,16 @@ namespace LostArkLogger
                                 entity.ClassId = pc.ClassId;
                                 entity.Class = Npc.GetPcClass(pc.ClassId);
                                 entity.Level = pc.Level;
-                                entity.GearScore = Convert.ToUInt32(gearScore);
+                                try
+                                {
+                                    entity.GearScore = Convert.ToUInt32(gearScore);
+                                }
+                                catch (FormatException e)
+                                {
+                                    // The gear score is not a number, so we set it to 1
+                                    // This is a special case and shouldn't happen
+                                    entity.GearScore = 1;
+                                }
                                 entity.CurrentHp =
                                     pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
                                 entity.MaxHp =
