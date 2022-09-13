@@ -404,12 +404,13 @@ function getPercentage(player, dmgType, relativeTo) {
 }
 .damage-meter-table-wrapper {
   overflow-y: scroll;
+  background-color: #161536;
 }
 .damage-meter-table-wrapper::-webkit-scrollbar {
   display: none;
 }
 .damage-meter-table {
-  font-family: "Segoe UI", "Segoe UI", "sans-serif";
+  font-family: "Inter", "sans-serif";
   z-index: 100;
   width: 100%;
   table-layout: fixed;
@@ -418,17 +419,17 @@ function getPercentage(player, dmgType, relativeTo) {
 .damage-meter-table thead {
   position: sticky;
   top: 0;
-  background: black;
+  background: #050720e6;
   z-index: 5000;
 }
 .damage-meter-table thead tr {
-  color: rgb(189, 189, 189);
+  color: rgb(204 206 237);
   font-size: 11px;
 }
 .damage-meter-table tbody tr {
   position: relative;
   height: 28px;
-  color: #ffffff;
+  color: rgb(204 206 237);
   font-size: 12px;
   text-shadow: rgb(0, 0, 0) 0px 0px 0.3rem;
 }

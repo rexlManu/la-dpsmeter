@@ -1,8 +1,8 @@
 <template>
   <div ref="damageMeterRef">
     <nav
-        class="nav q-electron-drag"
-        :class="
+      class="nav q-electron-drag"
+      :class="
         settingsStore.settings.damageMeter.design.compactDesign &&
         !isMinimized &&
         !isTakingScreenshot
@@ -11,8 +11,8 @@
       "
     >
       <span
-          v-if="!isMinimized"
-          :class="
+        v-if="!isMinimized"
+        :class="
           settingsStore.settings.damageMeter.design.compactDesign &&
           !isTakingScreenshot
             ? 'time-compact'
@@ -23,7 +23,7 @@
       </span>
       <div class="info-box">
         <div
-            v-if="
+          v-if="
             !settingsStore.settings.damageMeter.design.compactDesign ||
             isMinimized ||
             isTakingScreenshot
@@ -32,27 +32,27 @@
           DPS Meter
         </div>
         <div
-            v-if="!isMinimized && sessionState.damageStatistics"
-            class="q-electron-drag--exception"
+          v-if="!isMinimized && sessionState.damageStatistics"
+          class="q-electron-drag--exception"
         >
           <q-menu touch-position context-menu>
             <q-list dense style="min-width: 100px">
               <q-item
-                  v-for="tabName in Object.keys(
+                v-for="tabName in Object.keys(
                   settingsStore.settings.damageMeter.header
                 )"
-                  :key="tabName"
-                  clickable
-                  @click="toggleHeaderDisplay(tabName)"
+                :key="tabName"
+                clickable
+                @click="toggleHeaderDisplay(tabName)"
               >
                 <q-item-section side>
                   <q-icon
-                      v-if="
+                    v-if="
                       settingsStore.settings.damageMeter.header[tabName].enabled
                     "
-                      name="check"
+                    name="check"
                   />
-                  <q-icon v-else name="close"/>
+                  <q-icon v-else name="close" />
                 </q-item-section>
                 <q-item-section>
                   {{ settingsStore.settings.damageMeter.header[tabName].name }}
@@ -61,35 +61,35 @@
             </q-list>
           </q-menu>
           <span
-              v-if="settingsStore.settings.damageMeter.header.damage.enabled"
-              style="margin-right: 12px"
+            v-if="settingsStore.settings.damageMeter.header.damage.enabled"
+            style="margin-right: 12px"
           >
             Total DMG
             {{ numberFormat(sessionState.damageStatistics.totalDamageDealt) }}
           </span>
           <span
-              v-if="settingsStore.settings.damageMeter.header.dps.enabled"
-              style="margin-right: 12px"
+            v-if="settingsStore.settings.damageMeter.header.dps.enabled"
+            style="margin-right: 12px"
           >
             Total DPS
             {{ numberFormat(sessionDPS) }}
           </span>
           <span
-              v-if="settingsStore.settings.damageMeter.header.tank.enabled"
-              style="margin-right: 12px"
+            v-if="settingsStore.settings.damageMeter.header.tank.enabled"
+            style="margin-right: 12px"
           >
             Total TNK
             {{ numberFormat(sessionState.damageStatistics.totalDamageTaken) }}
           </span>
           <span
-              v-if="
+            v-if="
               settingsStore.settings.damageMeter.header.health.enabled &&
               sessionBoss &&
               sessionState.damageStatistics &&
               sessionState.damageStatistics?.totalDamageDealt &&
               fightDuration > 0
             "
-              style="margin-right: 12px"
+            style="margin-right: 12px"
           >
             Boss HP
             {{ numberFormat(sessionBoss.currentHp) }} /
@@ -101,12 +101,12 @@
       </div>
       <div v-if="!isTakingScreenshot" style="margin-left: auto">
         <q-btn
-            v-if="!isMinimized"
-            round
-            icon="screenshot_monitor"
-            @click="takeScreenshot"
-            flat
-            size="sm"
+          v-if="!isMinimized"
+          round
+          icon="screenshot_monitor"
+          @click="takeScreenshot"
+          flat
+          size="sm"
         >
           <q-tooltip> Take a screenshot of the damage meter</q-tooltip>
         </q-btn>
@@ -123,12 +123,12 @@
           </q-tooltip>
         </q-btn> -->
         <q-btn
-            v-if="!isMinimized"
-            round
-            :icon="isFightPaused ? 'play_arrow' : 'pause'"
-            @click="toggleFightPause"
-            flat
-            size="sm"
+          v-if="!isMinimized"
+          round
+          :icon="isFightPaused ? 'play_arrow' : 'pause'"
+          @click="toggleFightPause"
+          flat
+          size="sm"
         >
           <q-tooltip> Pause timer</q-tooltip>
         </q-btn>
@@ -143,22 +143,22 @@
         </q-btn> -->
       </div>
       <span v-else class="watermark-box">
-        <img class="watermark-logo" :src="logoImg"/>
+        <img class="watermark-logo" :src="logoImg" />
         github.com/karaeren/loa-details
       </span>
     </nav>
 
     <DamageMeterTable
-        v-if="!isMinimized && sessionState"
-        :session-state="sessionState"
-        :duration="fightDuration"
-        :damage-type="damageType"
-        :wrapper-style="`height:calc(100vh - 32px - ${
+      v-if="!isMinimized && sessionState"
+      :session-state="sessionState"
+      :duration="fightDuration"
+      :damage-type="damageType"
+      :wrapper-style="`height:calc(100vh - 32px - ${
         settingsStore?.settings?.damageMeter?.design?.compactDesign
           ? '32'
           : '64'
       }px)`"
-        :name-display="
+      :name-display="
         settingsStore?.settings?.damageMeter?.functionality?.nameDisplayV2
       "
     />
@@ -180,32 +180,11 @@
       </div>
 
       <div style="margin-left: auto">
-        <span
-            v-if="
-            settingsStore.settings.damageMeter.design.compactDesign &&
-            !isTakingScreenshot
-          "
-        >
-          v{{ settingsStore.settings.appVersion }}
-        </span>
         <q-btn
-            flat
-            size="sm"
-            :disabled="settingsStore.settings.uploads.uploadKey.length != 32"
-            :label="`UPLOADING: ${
-            settingsStore.settings.uploads.uploadLogs ? ' ON' : ' OFF'
-          }`"
-            :color="
-            settingsStore.settings.uploads.uploadLogs ? 'positive' : 'negative'
-          "
-        >
-          <q-tooltip>Toggles uploading encounters</q-tooltip>
-        </q-btn>
-        <q-btn
-            flat
-            size="sm"
-            @click="requestSessionRestart"
-            label="RESET SESSION"
+          flat
+          size="sm"
+          @click="requestSessionRestart"
+          label="RESET SESSION"
         >
           <q-tooltip> Resets the timer and damages</q-tooltip>
         </q-btn>
@@ -215,21 +194,20 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch} from "vue";
+import { onMounted, ref, watch } from "vue";
 
 import {
   numberFormat,
   millisToMinutesAndSeconds,
 } from "../utils/number-helpers.js";
-import {sleep} from "../utils/sleep.js";
+import { sleep } from "../utils/sleep.js";
 import html2canvas from "html2canvas";
-import {Buffer} from "buffer";
-import {saveAs} from "file-saver";
+import { Buffer } from "buffer";
+import { saveAs } from "file-saver";
 
-import {useSettingsStore} from "../stores/settings.js";
+import { useSettingsStore } from "../stores/settings.js";
 
 import DamageMeterTable from "../components/damage-meter/DamageMeterTable.vue";
-import {LogParser} from "../utils/parser/parser.ts";
 
 const logoImg = new URL(`../assets/images/logo.png`, import.meta.url).href;
 
@@ -244,86 +222,17 @@ const isDevEnvironment = import.meta.env.MODE === "development";
 // parser.removeOverkillDamage =
 //   settingsStore.settings.damageMeter.functionality.removeOverkillDamage;
 
-const socket = new WebSocket(
-    isDevEnvironment ? "ws://localhost:1338/state" :
-        `ws${window.location.protocol.startsWith("https:") ? "s" : ""}://` +
-        window.location.host + "/state"
-);
-socket.addEventListener("message", (event) => {
-  const state = JSON.parse(event.data);
-
-  sessionState.value = state;
-
-  if (
-      sessionState.value.damageStatistics?.totalDamageDealt &&
-      fightDuration.value > 0
-  )
-    sessionDPS.value = (
-        sessionState.value.damageStatistics.totalDamageDealt /
-        (fightDuration.value / 1000)
-    ).toFixed(0);
-
-  const mobs = Object.values(state.entities);
-  if (mobs.length <= 0) return;
-  const boss = mobs.sort((a, b) => b.maxHp - a.maxHp)[0];
-
-  sessionBoss.value = boss;
-
-  // Check if reset state
-  // isFightPaused.value = false;
-  // fightPausedOn = 0;
-  // fightPausedForMs = 0;
-  // damageType.value = "dmg";
-  // sessionDPS.value = 0;
-  // sessionBoss.value = null;
-
-  // Check if phase transition
-// } else if (value.startsWith("phase-transition")) {
-//   // phase-transition-0: raid over
-//   // phase-transition-1: boss dead, includes argos phases
-//   // phase-transition-2: wipe
-//
-//   if (
-//       value === "phase-transition-0" ||
-//       value === "phase-transition-1" ||
-//       value === "phase-transition-2"
-//   ) {
-//     if (
-//         settingsStore.settings.damageMeter.functionality
-//             .pauseOnPhaseTransition &&
-//         !isFightPaused.value
-//     ) {
-//       toggleFightPause();
-//
-//       let pauseReason = "Raid Over";
-//       if (value === "phase-transition-1") {
-//         pauseReason = "Boss Dead";
-//       } else if (value === "phase-transition-2") {
-//         pauseReason = "Wipe/Phase Clear";
-//       }
-//
-//       if (!isMinimized.value) {
-//         // Notify.create({
-//         //   message: `Paused the session (${pauseReason}).`,
-//         //   color: "primary",
-//         // });
-//       }
-//     }
-//   }
-});
-
 const isMinimized = ref(false);
 const isAutoMinimized = ref(false);
 const damageType = ref("dmg");
 
 const clickthroughTooltip = ref(null);
 
-function enableClickthrough() {
-}
+function enableClickthrough() {}
 
 function toggleHeaderDisplay(tabName) {
   settingsStore.settings.damageMeter.header[tabName].enabled =
-      !settingsStore.settings.damageMeter.header[tabName].enabled;
+    !settingsStore.settings.damageMeter.header[tabName].enabled;
 
   settingsStore.saveSettings();
 }
@@ -350,34 +259,122 @@ const damageMeterRef = ref(null);
 const isTakingScreenshot = ref(false);
 
 async function takeScreenshot() {
-  isTakingScreenshot.value = true;
-  await sleep(600);
+  // isTakingScreenshot.value = true;
+  // await sleep(600);
 
   const screenshot = await html2canvas(damageMeterRef.value, {
     backgroundColor: "#121212",
   });
 
   screenshot.toBlob(
-      (blob) => {
-        saveAs(blob, `damage-meter-${+new Date()}.png`);
-      },
-      "image/png",
-      1
+    (blob) => {
+      saveAs(blob, `damage-meter-${+new Date()}.png`);
+    },
+    "image/png",
+    1
   );
 
-  isTakingScreenshot.value = false;
-}
-
-function requestSessionRestart() {
-  parser.softReset();
+  // isTakingScreenshot.value = false;
 }
 
 const sessionState = ref({});
 const sessionDPS = ref(0);
 const sessionBoss = ref(null);
+const socket = ref(null);
+
+function requestSessionRestart() {
+  if (socket.value) {
+    socket.value.send("resetState");
+  }
+}
+
+const connectSocket = () => {
+  var url = isDevEnvironment
+    ? "ws://localhost:1338/state"
+    : `ws${window.location.protocol.startsWith("https:") ? "s" : ""}://` +
+      window.location.host +
+      "/state";
+  console.log(`Connecting to ${url}`);
+  socket.value = new WebSocket(url);
+
+  socket.value.addEventListener("open", () => {
+    console.log("Connected to websocket");
+  });
+  socket.value.addEventListener("close", () => {
+    console.log("Disconnected from websocket, reconnecting in 3 seconds");
+    setTimeout(() => {
+      connectSocket();
+    }, 3000);
+  });
+
+  socket.value.addEventListener("message", (event) => {
+    const state = JSON.parse(event.data);
+
+    sessionState.value = state;
+
+    if (
+      sessionState.value.damageStatistics?.totalDamageDealt &&
+      fightDuration.value > 0
+    )
+      sessionDPS.value = (
+        sessionState.value.damageStatistics.totalDamageDealt /
+        (fightDuration.value / 1000)
+      ).toFixed(0);
+
+    const mobs = Object.values(state.entities);
+    if (mobs.length <= 0) return;
+    const boss = mobs.sort((a, b) => b.maxHp - a.maxHp)[0];
+
+    sessionBoss.value = boss;
+
+    // Check if reset state
+    // isFightPaused.value = false;
+    // fightPausedOn = 0;
+    // fightPausedForMs = 0;
+    // damageType.value = "dmg";
+    // sessionDPS.value = 0;
+    // sessionBoss.value = null;
+
+    // Check if phase transition
+    // } else if (value.startsWith("phase-transition")) {
+    //   // phase-transition-0: raid over
+    //   // phase-transition-1: boss dead, includes argos phases
+    //   // phase-transition-2: wipe
+    //
+    //   if (
+    //       value === "phase-transition-0" ||
+    //       value === "phase-transition-1" ||
+    //       value === "phase-transition-2"
+    //   ) {
+    //     if (
+    //         settingsStore.settings.damageMeter.functionality
+    //             .pauseOnPhaseTransition &&
+    //         !isFightPaused.value
+    //     ) {
+    //       toggleFightPause();
+    //
+    //       let pauseReason = "Raid Over";
+    //       if (value === "phase-transition-1") {
+    //         pauseReason = "Boss Dead";
+    //       } else if (value === "phase-transition-2") {
+    //         pauseReason = "Wipe/Phase Clear";
+    //       }
+    //
+    //       if (!isMinimized.value) {
+    //         // Notify.create({
+    //         //   message: `Paused the session (${pauseReason}).`,
+    //         //   color: "primary",
+    //         // });
+    //       }
+    //     }
+    //   }
+  });
+};
 
 onMounted(() => {
   settingsStore.initSettings();
+
+  connectSocket();
 
   setInterval(() => {
     if (Object.keys(sessionState.value).length <= 0) return;
@@ -389,7 +386,7 @@ onMounted(() => {
     if (sessionState.value.fightStartedOn > 0) {
       if (!isFightPaused.value)
         fightDuration.value =
-            curTime - sessionState.value.fightStartedOn - fightPausedForMs;
+          curTime - sessionState.value.fightStartedOn - fightPausedForMs;
     } else fightDuration.value = 0;
   }, 1000);
 });
@@ -413,7 +410,7 @@ body {
 
 html {
   color: #ffffff;
-  font-family: "Segoe UI", "sans-serif";
+  font-family: "Inter", "sans-serif";
   line-height: 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -440,8 +437,8 @@ li {
 .footer {
   display: flex;
   align-items: center;
-  background: rgb(22, 22, 22, 0.75);
-  color: rgb(189, 189, 189);
+  background: rgb(3 2 68 / 75%);
+  color: rgb(163 154 231);
   height: 64px;
   font-size: 14px;
   padding: 0 8px;
@@ -473,7 +470,7 @@ li {
 
 .nav .time-compact {
   font-size: 11px;
-  color: #fff;
+  color: rgb(226 224 247);
 }
 
 .nav .time {

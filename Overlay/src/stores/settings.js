@@ -61,7 +61,7 @@ export const useSettingsStore = defineStore("settings", {
           nameDisplayV2: "name+gear+class",
         },
         design: {
-          compactDesign: false,
+          compactDesign: true,
           pinUserToTop: false,
           opacity: 0.9,
         },
@@ -90,7 +90,7 @@ export const useSettingsStore = defineStore("settings", {
           },
           deathTime: {
             name: "Death Time",
-            enabled: false,
+            enabled: true,
           },
           damagePercent: {
             name: "D% (Damage Percent)",
