@@ -58,9 +58,9 @@ namespace LostArkLogger
                 var ipAddressString = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapAddress;
                 var ipAddress = System.Net.IPAddress.Parse(ipAddressString);
                 var port = LostArkLogger.Instance.ConfigurationProvider.Configuration.PCapPort;
-                
+
                 Console.WriteLine("Trying to connect to " + ipAddressString + ":" + port);
-                
+
                 IReadOnlyList<PcapInterface>? remoteInterfaces = null;
                 try
                 {
@@ -323,7 +323,7 @@ namespace LostArkLogger
                 {
                     // Console.WriteLine(opcode + " : " + opcode.ToString("X") + " : " + BitConverter.ToString(payload));
                 }
-                
+
                 /* Uncomment for auction house accessory sniffing
                 if (opcode == OpCodes.PKTAuctionSearchResult)
                 {
@@ -523,16 +523,7 @@ namespace LostArkLogger
                                 entity.ClassId = pc.ClassId;
                                 entity.Class = Npc.GetPcClass(pc.ClassId);
                                 entity.Level = pc.Level;
-                                try
-                                {
-                                    entity.GearScore = Convert.ToUInt32(gearScore);
-                                }
-                                catch (FormatException e)
-                                {
-                                    // The gear score is not a number, so we set it to 1
-                                    // This is a special case and shouldn't happen
-                                    entity.GearScore = 1;
-                                }
+                                entity.GearScore = BitConverter.ToSingle(BitConverter.GetBytes(pc.GearLevel), 0);
                                 entity.CurrentHp =
                                     pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
                                 entity.MaxHp =
@@ -575,7 +566,7 @@ namespace LostArkLogger
                             pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_MAX_HP)]
                                 .ToString());
                         currentEncounter.LoggedEntities.TryAdd(pc.PlayerId, true);
-                        
+
                         LostArkLogger.Instance.EventManager.Raise(
                             new NewEntityEvent(State.Entity.CreateEntity().Modify(entity =>
                             {
@@ -584,16 +575,7 @@ namespace LostArkLogger
                                 entity.ClassId = pc.ClassId;
                                 entity.Class = Npc.GetPcClass(pc.ClassId);
                                 entity.Level = pc.Level;
-                                try
-                                {
-                                    entity.GearScore = Convert.ToUInt32(gearScore);
-                                }
-                                catch (FormatException e)
-                                {
-                                    // The gear score is not a number, so we set it to 1
-                                    // This is a special case and shouldn't happen
-                                    entity.GearScore = 1;
-                                }
+                                entity.GearScore = BitConverter.ToSingle(BitConverter.GetBytes(pc.GearLevel), 0);
                                 entity.CurrentHp =
                                     pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
                                 entity.MaxHp =

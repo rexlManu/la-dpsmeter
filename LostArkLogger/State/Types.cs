@@ -152,7 +152,7 @@ public class Entity
     public bool IsDead { get; set; }
     public int Deaths { get; set; }
     public long DeathTime { get; set; }
-    public uint GearScore { get; set; }
+    public float GearScore { get; set; }
     public long CurrentHp { get; set; }
     public long MaxHp { get; set; }
     public long DamageDealt { get; set; }
@@ -165,7 +165,7 @@ public class Entity
     public int Level { get; set; } = 0;
 
     public Entity(long lastUpdate, string id, uint npcId, string name, string @class, int classId, bool isPlayer,
-        bool isDead, int deaths, long deathTime, uint gearScore, long currentHp, long maxHp, long damageDealt,
+        bool isDead, int deaths, long deathTime, float gearScore, long currentHp, long maxHp, long damageDealt,
         long healingDone, long shieldDone, long damageTaken, Dictionary<string, EntitySkills> skills, Hits hits)
     {
         LastUpdate = lastUpdate;
