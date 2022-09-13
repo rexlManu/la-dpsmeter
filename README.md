@@ -108,9 +108,19 @@ Before you run the container, you have to create a `config.yml` file.
 You can copy the [default.config.yml](default.config.yml) file and change the `p-cap-address` to the ip address of your
 main computer.
 
+###### Bash
 ```bash
   docker run -d --name dps-meter --restart=unless-stopped -v $(pwd)/config.yml:/app/config.yml -p 1338:1338 la-dpsmeter
 ```
+###### Powershell
+```bash
+  docker run -d --name dps-meter --restart=unless-stopped -v ${PWD}/config.yml:/app/config.yml -p 1338:1338 la-dpsmeter
+```
+###### Batch (cmd)
+```bash
+  docker run -d --name dps-meter --restart=unless-stopped -v %cd%/config.yml:/app/config.yml -p 1338:1338 la-dpsmeter
+```
+
 
 ## DPS Meter Overlay
 
