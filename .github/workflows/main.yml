@@ -18,13 +18,20 @@ jobs:
           dotnet-version: '6.0.x'
           include-prerelease: true
       - run: dotnet restore
-      - run: dotnet publish -c Release -o out
-      - run: cp bin/* out/
-      - run: zip -r dps-meter.zip out
+        # Create linux binaries
+      - run: dotnet publish -c Release -o out/linux --os linux
+        # Create windows binaries
+      - run: dotnet publish -c Release -o out/win --os win
+      - run: cp bin/*.so out/linux
+      - run: cp bin/*.dll out/win
       - uses: actions/upload-artifact@v3
         with:
-          name: dps-meter
-          path: out
+          name: dps-meter-win
+          path: out/win
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dps-meter-linux
+          path: out/linux
       - uses: actions/create-release@v1
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
