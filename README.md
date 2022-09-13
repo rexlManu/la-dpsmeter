@@ -3,6 +3,10 @@
 A fork of [https://github.com/karaeren/LostArkLogger](https://github.com/karaeren/LostArkLogger) with the capability to
 remote log packets via winpcap for docker.
 
+![Image](https://safe.manu.moe/9Sxwowoi.jpg)
+
+Zero risk made possible with [tabfloater](https://www.tabfloater.io).
+
 ## Setup
 
 You have the following options to run this.
