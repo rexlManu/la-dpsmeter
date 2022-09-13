@@ -109,22 +109,30 @@ You can copy the [default.config.yml](default.config.yml) file and change the `p
 main computer.
 
 ###### Bash
+
 ```bash
   docker run -d --name dps-meter --restart=unless-stopped -v $(pwd)/config.yml:/app/config.yml -p 1338:1338 la-dpsmeter
 ```
+
 ###### Powershell
+
 ```bash
   docker run -d --name dps-meter --restart=unless-stopped -v ${PWD}/config.yml:/app/config.yml -p 1338:1338 la-dpsmeter
 ```
+
 ###### Batch (cmd)
+
 ```bash
   docker run -d --name dps-meter --restart=unless-stopped -v %cd%/config.yml:/app/config.yml -p 1338:1338 la-dpsmeter
 ```
 
-
 ## DPS Meter Overlay
 
 You can find the dps meter at `http://server-ip:1338` (port 1338 in this example).
+
+## Support
+
+We have a [discord server](https://discord.gg/bm8ntsjveb) where you can ask questions or report bugs.
 
 # WARNING
 
