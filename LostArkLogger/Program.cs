@@ -17,6 +17,19 @@ namespace LostArkLogger
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("");
+            Console.WriteLine(" DPS Meter - https://github.com/rexlManu/dps-meter");
+            Console.WriteLine(
+                " If you have any issues, please report them on the github page or on our discord server.");
+            Console.WriteLine(" Discord: discord.gg/bm8ntsjveb");
+            Console.WriteLine("");
+            Console.WriteLine(" Credits to the following people:");
+            Console.WriteLine(
+                " https://github.com/shalzuth/LostArkLogger - For the big work of reverse engineering the Lost Ark network protocol and providing a open source solution.");
+            Console.WriteLine(
+                " https://github.com/karaeren/loa-details - For a really nice UI and UX for displaying damage meter.");
+            Console.WriteLine(" Ofcourse a big thanks you to all contributors of the projects too.");
+            Console.WriteLine("");
             // Shutdown hook
             AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => { LostArkLogger.Instance.onExit(); };
 
