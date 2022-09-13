@@ -1,9 +1,9 @@
 name: Build App
  
 on:
+  # Trigger on commit, pull request, and push
   push:
-    tags:
-      - '*'
+  pull_request:
   
   # manually trigger the workflow
   workflow_dispatch:
@@ -20,9 +20,12 @@ jobs:
       - run: dotnet restore
         # Create linux binaries
       - run: dotnet publish -c Release -o out/linux --os linux
+        # Create linux arm binaries
+      - run: dotnet publish -c Release -o out/linux-arm --os linux --arch arm
         # Create windows binaries
       - run: dotnet publish -c Release -o out/win --os win
       - run: cp bin/*.so out/linux
+      - run: cp bin/*.so out/linux-arm
       - run: cp bin/*.dll out/win
       - uses: actions/upload-artifact@v3
         with:
@@ -32,10 +35,14 @@ jobs:
         with:
           name: dps-meter-linux
           path: out/linux
-      - uses: actions/create-release@v1
-        env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v3
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
+          name: dps-meter-linux-arm
+          path: out/linux-arm
+#      - uses: actions/create-release@v1
+#        env: 
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: Release ${{ github.ref }}
+#          draft: true
