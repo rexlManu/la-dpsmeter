@@ -520,7 +520,7 @@ namespace LostArkLogger
                                 entity.ClassId = pc.ClassId;
                                 entity.Class = Npc.GetPcClass(pc.ClassId);
                                 entity.Level = pc.Level;
-                                entity.GearScore = pc.GearLevel;
+                                entity.GearScore = Convert.ToUInt32(BitConverter.ToSingle(BitConverter.GetBytes(pc.GearLevel), 0).ToString("0.##"));
                                 entity.CurrentHp =
                                     pc.statPair.Value[pc.statPair.StatType.IndexOf((Byte) StatType.STAT_TYPE_HP)];
                                 entity.MaxHp =
