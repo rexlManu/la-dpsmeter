@@ -16,6 +16,8 @@ public class StateManager
 
     private List<StateSocketHandler> _stateSocketHandlers = new List<StateSocketHandler>();
 
+    private bool PhaseTransitionResetRequest;
+    private long PhaseTransitionResetTime;
     private Game? _Game;
     private List<HealSource> _HealSources;
 
@@ -111,6 +113,10 @@ public class StateManager
 
         manager.Subscribe<EntityDamageEvent>(e =>
         {
+            if(PhaseTransitionResetRequest && PhaseTransitionResetTime > 0 && PhaseTransitionResetTime < DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 1500)
+            {
+                SoftReset();
+            }
             UpdateEntity(e.Name, entity =>
             {
                 entity.Id = e.Id;
@@ -293,6 +299,11 @@ public class StateManager
                 this._Game.Entities[e.Name].Skills[e.SkillName].Hits.Counter += 1;
             }
         });
+        manager.Subscribe<PhaseTransitionEvent>(e =>
+        {
+            PhaseTransitionResetRequest = true;
+            PhaseTransitionResetTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        });
     }
 
     private void UpdateEntity(string? name, Func<Entity, Entity> modify)
@@ -362,6 +373,8 @@ public class StateManager
                 0,
                 0)
         );
+        PhaseTransitionResetTime = 0;
+        PhaseTransitionResetRequest = false;
         _HealSources = new List<HealSource>();
     }
 
