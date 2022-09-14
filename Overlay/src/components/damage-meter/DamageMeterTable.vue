@@ -404,7 +404,7 @@ function getPercentage(player, dmgType, relativeTo) {
 }
 .damage-meter-table-wrapper {
   overflow-y: scroll;
-  background-color: #161536;
+  /* background-color: #161536; */
 }
 .damage-meter-table-wrapper::-webkit-scrollbar {
   display: none;
