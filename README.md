@@ -32,7 +32,7 @@ If you have access to multiple computers, you have the following options:
 
 This is the most risky option, but it's the easiest to setup.
 You just have to download the binaries from the [releases](
-http://github.com/rexlmanu/dps-meter/releases) page and run the
+http://github.com/rexlmanu/la-dpsmeter/releases) page and run the
 `dps-meter.exe` file.
 
 #### Run it in a docker container
@@ -49,7 +49,9 @@ linux setup here under.
 
 ### Preparation
 
-#### Install winpcap on your main computer
+#### Install pcap on your main computer
+
+##### Outdated (it works but should only work on windows 10)
 
 You have to install winpcap on your main computer. You can download it
 from [here](https://www.winpcap.org/install/default.htm).
@@ -68,9 +70,32 @@ You can change the port to whatever you want, but you have to change it in the d
 Every time you want to start the winpcap service, you have to run this file.
 Of course you could also add it to your startup folder.
 
+##### recommended: npcap (works on windows 10 and 11)
+
+You have to install npcap on your main computer. You can download it
+from [here](https://nmap.org/npcap/).
+
+After you have to download the `rpcapd` binary from [here](https://github.com/guy0090/libpcap/releases/tag/0.0.0).
+You have to put it in the same folder as the `npcap` folder. This folder is usually located in `C:\Program Files\Npcap`.
+
+After you have installed it, you need to create a `start-npcap.bat` file somewhere on your computer.
+
+This file should contain the following:
+
+```shell
+@REM change directory to C:\Program Files\Npcap
+@cd C:\Program Files\Npcap
+@REM start the rpcapd service
+@start rpcapd.exe -p 1337 -n
+```
+
+You can change the port to whatever you want, but you have to change it in the docker container as well.
+Every time you want to start the npcap service, you have to run this file.
+Of course you could also add it to your startup folder.
+
 #### Install dps-meter on windows
 
-Download the latest release from [here](http://github.com/rexlmanu/dps-meter/releases) and extract it somewhere.
+Download the latest release from [here](http://github.com/rexlmanu/la-dpsmeter/releases) and extract it somewhere.
 Copy the [default.config.yml](default.config.yml) file to the same directory and rename it to `config.yml`.
 
 Change the `p-cap-address` to the ip address of your main computer.
@@ -81,7 +106,7 @@ You can run the `dps-meter.exe` file to start the tool.
 
 #### Install dps-meter on linux
 
-Download the latest release from [here](http://github.com/rexlmanu/dps-meter/releases) and extract it somewhere.
+Download the latest release from [here](http://github.com/rexlmanu/la-dpsmeter/releases) and extract it somewhere.
 Copy the [default.config.yml](default.config.yml) file to the same directory and rename it to `config.yml`.
 
 Change the `p-cap-address` to the ip address of your main computer.
