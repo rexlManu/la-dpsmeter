@@ -90,8 +90,9 @@ from [here](https://nmap.org/npcap/).
 
 Make sure to have the option `Install Npcap in WinPcap API-compatible Mode` checked.
 
-After you have to download the `rpcapd` binary from [here](https://github.com/guy0090/libpcap/releases/tag/0.0.0).
-You have to put it in the same folder as the `npcap` folder. This folder is usually located in `C:\Program Files\Npcap`.
+After you have to download the `rpcapd` archive from [here](https://github.com/guy0090/libpcap/releases/tag/0.0.0).
+You have to extract the archive in the same directory as the `npcap` installation directory.
+This folder is usually located in `C:\Program Files\Npcap`.
 
 After you have installed it, you need to create a `start-npcap.bat` file somewhere on your computer.
 
