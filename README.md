@@ -7,6 +7,16 @@ remote log packets via winpcap for docker.
 
 Zero risk made possible with [tabfloater](https://www.tabfloater.io).
 
+## Download
+
+### Binaries
+
+You can always find the newest binaries [here](https://github.com/rexlManu/la-dpsmeter/actions/workflows/main.yml).
+
+Just click on the latest Build and scroll down. You will find the binaries in the Artifacts section.
+
+Provided binaries are for Windows, Linux and Linux ARM.
+
 ## Setup
 
 You have the following options to run this.
@@ -31,9 +41,12 @@ If you have access to multiple computers, you have the following options:
 #### Run it directly on your computer
 
 This is the most risky option, but it's the easiest to setup.
-You just have to download the binaries from the [releases](
-http://github.com/rexlmanu/la-dpsmeter/releases) page and run the
-`dps-meter.exe` file.
+Download the latest binaries, check the binaries section for more information.
+
+Run the `dps-meter.exe` executable file.
+The first time a config file will be created in the same directory as the executable.
+You can edit the config file to your liking.
+Start the file again and you should be good to go.
 
 #### Run it in a docker container
 
@@ -95,7 +108,7 @@ Of course you could also add it to your startup folder.
 
 #### Install dps-meter on windows
 
-Download the latest release from [here](http://github.com/rexlmanu/la-dpsmeter/releases) and extract it somewhere.
+Download the latest binaries, check the binaries section for more information, extract it somewhere.
 Copy the [default.config.yml](default.config.yml) file to the same directory and rename it to `config.yml`.
 
 Change the `p-cap-address` to the ip address of your main computer.
@@ -106,7 +119,8 @@ You can run the `dps-meter.exe` file to start the tool.
 
 #### Install dps-meter on linux
 
-Download the latest release from [here](http://github.com/rexlmanu/la-dpsmeter/releases) and extract it somewhere.
+Download the latest binaries, check the binaries section for more information.
+Extract it somewhere after you have downloaded it.
 Copy the [default.config.yml](default.config.yml) file to the same directory and rename it to `config.yml`.
 
 Change the `p-cap-address` to the ip address of your main computer.
