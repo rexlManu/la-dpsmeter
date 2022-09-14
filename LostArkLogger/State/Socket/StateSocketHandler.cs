@@ -37,6 +37,14 @@ public class StateSocketHandler : WebSocketBehavior
 
     protected override void OnMessage(MessageEventArgs e)
     {
+        var message = e.Data;
+        
+        if(message.Equals("resetState"))
+        {
+            LostArkLogger.Instance.StateManager.ResetState();
+            
+            Sessions.Broadcast("stateReseted");
+        }
     }
 
     private void Tick(object? state)
