@@ -379,6 +379,17 @@ public class StateManager
         PhaseTransitionResetTime = 0;
         PhaseTransitionResetRequest = false;
         _HealSources = new List<HealSource>();
+        
+        foreach (var handler in _stateSocketHandlers)
+        {
+            try
+            {
+                handler.Context.WebSocket.Send("stateReseted");
+            }
+            catch (Exception ignored)
+            {
+            }
+        }
     }
 
     public Game GetState()
