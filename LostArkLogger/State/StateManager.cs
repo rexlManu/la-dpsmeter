@@ -46,7 +46,7 @@ public class StateManager
                 entity.Name = e.Entity.Name;
                 entity.IsPlayer = e.Entity.IsPlayer;
                 // We don't want to overwrite the entity's metadata with the default values
-                if (!e.IsUnknown)
+                if (!e.IsUnknown || entity.GearScore == 0)
                 {
                     entity.Class = e.Entity.Class;
                     entity.ClassId = e.Entity.ClassId;
