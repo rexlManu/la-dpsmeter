@@ -74,6 +74,7 @@ namespace LostArkLogger
             {
                 Console.WriteLine("useHttpBridge is true, starting http bridge");
                 this._httpBridge = new HttpBridge() {args = args};
+                this._httpBridge.Start();
             }
 
             if (this.ConfigurationProvider.Configuration.WebOverlay)
@@ -81,7 +82,6 @@ namespace LostArkLogger
                 Console.WriteLine("WebOverlay is true, starting web server");
                 this.StateManager = new StateManager();
                 this.Server = new ApplicationServer();
-
                 this.Server.Start();
             }
         }
