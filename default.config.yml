@@ -6,3 +6,4 @@ web-host: host.docker.internal
 web-port: 1338
 use-http-bridge: false
 refresh-rate: 250
+web-overlay: true

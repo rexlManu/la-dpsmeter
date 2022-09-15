@@ -74,13 +74,16 @@ namespace LostArkLogger
             {
                 Console.WriteLine("useHttpBridge is true, starting http bridge");
                 this._httpBridge = new HttpBridge() {args = args};
-                return;
             }
 
-            this.StateManager = new StateManager();
-            this.Server = new ApplicationServer();
+            if (this.ConfigurationProvider.Configuration.WebOverlay)
+            {
+                Console.WriteLine("WebOverlay is true, starting web server");
+                this.StateManager = new StateManager();
+                this.Server = new ApplicationServer();
 
-            this.Server.Start();
+                this.Server.Start();
+            }
         }
 
         public void onExit()

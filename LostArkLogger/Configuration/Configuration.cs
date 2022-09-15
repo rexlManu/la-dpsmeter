@@ -16,6 +16,7 @@ public class Configuration
     public int WebPort = 1338;
     public int RefreshRate = 250;
     public bool UseHttpBridge = false;
+    public bool WebOverlay = true;
 
     public static byte[] ReadXorBinary(string name)
     {
