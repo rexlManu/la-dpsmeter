@@ -151,7 +151,7 @@ namespace LostArkLogger
                             entity.IsPlayer = true;
 
                             return entity;
-                        })));
+                        }), true));
                 }
             }
 

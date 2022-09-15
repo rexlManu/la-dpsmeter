@@ -44,13 +44,16 @@ public class StateManager
             {
                 entity.Id = e.Entity.Id;
                 entity.Name = e.Entity.Name;
-                entity.Class = e.Entity.Class;
-                entity.ClassId = e.Entity.ClassId;
                 entity.IsPlayer = e.Entity.IsPlayer;
-                entity.GearScore = e.Entity.GearScore;
-                entity.CurrentHp = e.Entity.CurrentHp;
-                entity.MaxHp = e.Entity.MaxHp;
-                entity.NpcId = e.Entity.NpcId;
+                // We don't want to overwrite the entity's metadata with the default values
+                if (!e.IsUnknown)
+                {
+                    entity.Class = e.Entity.Class;
+                    entity.ClassId = e.Entity.ClassId;
+                    entity.GearScore = e.Entity.GearScore;
+                    entity.MaxHp = e.Entity.MaxHp;
+                    entity.NpcId = e.Entity.NpcId;
+                }
                 return entity;
             });
         });
