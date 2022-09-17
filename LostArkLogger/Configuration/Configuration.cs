@@ -33,7 +33,7 @@ public class ConfigurationProvider
 {
     private string configPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/config.yml";
 
-    public Configuration Configuration;
+    public Configuration Configuration = new Configuration();
 
     public ConfigurationProvider()
     {
@@ -42,7 +42,7 @@ public class ConfigurationProvider
         {
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(HyphenatedNamingConvention.Instance).Build();
-            File.WriteAllText(configPath, serializer.Serialize(new Configuration()));
+            File.WriteAllText(configPath, serializer.Serialize(Configuration));
             Console.WriteLine("Config created.");
             Environment.Exit(-1);
             return;
