@@ -54,6 +54,7 @@ public class StateManager
                     entity.MaxHp = e.Entity.MaxHp;
                     entity.NpcId = e.Entity.NpcId;
                 }
+
                 return entity;
             });
         });
@@ -116,10 +117,12 @@ public class StateManager
 
         manager.Subscribe<EntityDamageEvent>(e =>
         {
-            if(PhaseTransitionResetRequest && PhaseTransitionResetTime > 0 && PhaseTransitionResetTime < DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 1500)
+            if (PhaseTransitionResetRequest && PhaseTransitionResetTime > 0 &&
+                PhaseTransitionResetTime < DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 1500)
             {
                 SoftReset();
             }
+
             UpdateEntity(e.Name, entity =>
             {
                 entity.Id = e.Id;
@@ -306,47 +309,70 @@ public class StateManager
         {
             PhaseTransitionResetRequest = true;
             PhaseTransitionResetTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            RemoveDeadEntities();
         });
     }
 
     private void UpdateEntity(string? name, Func<Entity, Entity> modify)
     {
-        if (name == null) name = "";
-        this._Game.Entities.TryGetValue(name, out Entity? entity);
-
-        if (entity == null)
+        lock (_Game.Entities)
         {
-            entity = Entity.CreateEntity();
-        }
+            if (name == null) name = "";
+            this._Game.Entities.TryGetValue(name, out Entity? entity);
 
-        this._Game.Entities[name] = entity.Modify(modify).Update();
+            if (entity == null)
+            {
+                entity = Entity.CreateEntity();
+            }
+
+            this._Game.Entities[name] = entity.Modify(modify).Update();
+        }
     }
 
     private void SoftReset()
     {
-        var gameEntities = _Game.Entities;
-        ResetState();
-
-        foreach (var entity in gameEntities)
+        lock (_Game.Entities)
         {
-            if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - entity.Value.LastUpdate > 10 * 60 * 1000)
+            var gameEntities = _Game.Entities;
+            ResetState();
+
+            foreach (var entity in gameEntities)
             {
-                continue;
+                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - entity.Value.LastUpdate > 10 * 60 * 1000)
+                {
+                    continue;
+                }
+
+                UpdateEntity(entity.Key, newEntity =>
+                {
+                    newEntity.Name = entity.Value.Name;
+                    newEntity.NpcId = entity.Value.NpcId;
+                    newEntity.Class = entity.Value.Class;
+                    newEntity.ClassId = entity.Value.ClassId;
+                    newEntity.IsPlayer = entity.Value.IsPlayer;
+                    newEntity.GearScore = entity.Value.GearScore;
+                    newEntity.MaxHp = entity.Value.MaxHp;
+                    newEntity.CurrentHp = entity.Value.CurrentHp;
+
+                    return newEntity;
+                });
             }
 
-            UpdateEntity(entity.Key, newEntity =>
-            {
-                newEntity.Name = entity.Value.Name;
-                newEntity.NpcId = entity.Value.NpcId;
-                newEntity.Class = entity.Value.Class;
-                newEntity.ClassId = entity.Value.ClassId;
-                newEntity.IsPlayer = entity.Value.IsPlayer;
-                newEntity.GearScore = entity.Value.GearScore;
-                newEntity.MaxHp = entity.Value.MaxHp;
-                newEntity.CurrentHp = entity.Value.CurrentHp;
+            RemoveDeadEntities();
+        }
+    }
 
-                return newEntity;
-            });
+    // Remove entities that are dead and not players
+    private void RemoveDeadEntities()
+    {
+        var gameEntities = _Game.Entities;
+        foreach (var entity in gameEntities)
+        {
+            if (entity.Value.IsPlayer) continue;
+            if (entity.Value.CurrentHp > 0) continue;
+
+            gameEntities.Remove(entity.Key);
         }
     }
 
@@ -379,7 +405,7 @@ public class StateManager
         PhaseTransitionResetTime = 0;
         PhaseTransitionResetRequest = false;
         _HealSources = new List<HealSource>();
-        
+
         foreach (var handler in _stateSocketHandlers)
         {
             try
