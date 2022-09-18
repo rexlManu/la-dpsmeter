@@ -39,7 +39,7 @@ public class StateManager
         manager.Subscribe<EnterNewZoneEvent>(_ => { SoftReset(); });
         manager.Subscribe<NewEntityEvent>(e =>
         {
-            Console.WriteLine($"New entity: {e.Entity.Name}, Class: {e.Entity.Class}, ID: {e.Entity.Id}");
+            // Console.WriteLine($"New entity: {e.Entity.Name}, Class: {e.Entity.Class}, ID: {e.Entity.Id}");
             UpdateEntity(e.Entity.Id, entity =>
             {
                 entity.Id = e.Entity.Id;

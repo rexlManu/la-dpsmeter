@@ -140,7 +140,7 @@ namespace LostArkLogger
                     Logger.AppendLog(3, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, "0",
                         sourceEntity.ClassName, "1", "0", "0");
                     currentEncounter.LoggedEntities.TryAdd(sourceEntity.EntityId, true);
-
+                    
                     LostArkLogger.Instance.EventManager.Raise(new NewEntityEvent(State.Entity.CreateEntity()
                         .Modify(entity =>
                         {
@@ -207,7 +207,7 @@ namespace LostArkLogger
                 sourceEntity.ClassName = className; // for case where we don't know user's class yet            
             }
 
-            if (String.IsNullOrEmpty(sourceEntity.Name)) sourceEntity.Name = damage.SourceId.ToString("X");
+            if (String.IsNullOrEmpty(sourceEntity.Name)) sourceEntity.Name = String.IsNullOrEmpty(sourceEntity.ClassName) ? damage.SourceId.ToString("X") : sourceEntity.ClassName;
             foreach (var dmgEvent in damage.skillDamageEvents)
                 ProcessDamageEvent(sourceEntity, damage.SkillId, damage.SkillEffectId, dmgEvent);
         }
@@ -222,7 +222,7 @@ namespace LostArkLogger
                 sourceEntity.ClassName = className; // for case where we don't know user's class yet            
             }
 
-            if (String.IsNullOrEmpty(sourceEntity.Name)) sourceEntity.Name = damage.SourceId.ToString("X");
+            if (String.IsNullOrEmpty(sourceEntity.Name)) sourceEntity.Name = String.IsNullOrEmpty(sourceEntity.ClassName) ? damage.SourceId.ToString("X") : sourceEntity.ClassName;
             foreach (var dmgEvent in damage.skillDamageMoveEvents)
                 ProcessDamageEvent(sourceEntity, damage.SkillId, damage.SkillEffectId, dmgEvent.skillDamageEvent);
         }
