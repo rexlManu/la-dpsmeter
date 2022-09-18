@@ -129,20 +129,20 @@
             }}%)
           </span>
 
-          <span
-              class="boss-name"
-              v-if="
-              settingsStore.settings.damageMeter.header.health.enabled &&
-              sessionBoss &&
-              sessionState.damageStatistics &&
-              sessionState.damageStatistics?.totalDamageDealt &&
-              fightDuration > 0 &&
-              sessionBoss.name
-            "
-              style="margin-right: 12px"
-          >
-            Name {{ sessionBoss.name }}
-          </span>
+<!--          <span-->
+<!--              class="boss-name"-->
+<!--              v-if="-->
+<!--              settingsStore.settings.damageMeter.header.health.enabled &&-->
+<!--              sessionBoss &&-->
+<!--              sessionState.damageStatistics &&-->
+<!--              sessionState.damageStatistics?.totalDamageDealt &&-->
+<!--              fightDuration > 0 &&-->
+<!--              sessionBoss.name-->
+<!--            "-->
+<!--              style="margin-right: 12px"-->
+<!--          >-->
+<!--            Name {{ sessionBoss.name }}-->
+<!--          </span>-->
         </div>
       </div>
       <div v-if="!isTakingScreenshot" style="margin-left: auto">
