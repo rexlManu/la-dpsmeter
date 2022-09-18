@@ -371,6 +371,7 @@ public class StateManager
         {
             if (entity.Value.IsPlayer) continue;
             if (entity.Value.CurrentHp > 0) continue;
+            if(!entity.Value.IsDead) continue;
 
             gameEntities.Remove(entity.Key);
         }
