@@ -62,52 +62,14 @@ linux setup here under.
 
 ### Preparation
 
-#### Install pcap on your main computer
-
-##### Outdated (it works but should only work on windows 10)
-
-You have to install winpcap on your main computer. You can download it
-from [here](https://www.winpcap.org/install/default.htm).
-
-After you have installed it, you need to create a `start-winpcap.bat` file somewhere on your computer.
-This file should contain the following:
-
-```shell
-@REM change directory to C:\Program Files (x86)\WinPcap
-@cd C:\Program Files (x86)\WinPcap
-@REM start the rpcapd service
-@start rpcapd.exe -p 1337 -n
-```
-
-You can change the port to whatever you want, but you have to change it in the docker container as well.
-Every time you want to start the winpcap service, you have to run this file.
-Of course you could also add it to your startup folder.
-
-##### recommended: npcap (works on windows 10 and 11)
+#### Install rpcapd on your main computer
 
 You have to install npcap on your main computer. You can download it
 from [here](https://nmap.org/npcap/).
 
 Make sure to have the option `Install Npcap in WinPcap API-compatible Mode` checked.
 
-After you have to download the `rpcapd` archive from [here](https://github.com/guy0090/libpcap/releases/tag/0.0.0).
-You have to extract the archive in the same directory as the `npcap` installation directory.
-This folder is usually located in `C:\Program Files\Npcap`.
-
-After you have installed it, you need to create a `start-npcap.bat` file somewhere on your computer.
-
-This file should contain the following:
-
-```shell
-@REM change directory to C:\Program Files\Npcap
-@cd C:\Program Files\Npcap
-@REM start the rpcapd service
-@start rpcapd.exe -p 1337 -n
-```
-
-You can change the port to whatever you want, but you have to change it in the docker container as well.
-Every time you want to start the npcap service, you have to run this file.
-Of course you could also add it to your startup folder.
+After that, you have to install rpcapd. You can use the following [script to install it](bin/install-rpcapd.ps1).
 
 #### Install dps-meter on windows
 
