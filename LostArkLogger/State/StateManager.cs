@@ -39,8 +39,8 @@ public class StateManager
         manager.Subscribe<EnterNewZoneEvent>(_ => { SoftReset(); });
         manager.Subscribe<NewEntityEvent>(e =>
         {
-            // Console.WriteLine($"New entity: {e.Entity.Name}");
-            UpdateEntity(e.Entity.Name, entity =>
+            Console.WriteLine($"New entity: {e.Entity.Name}, Class: {e.Entity.Class}, ID: {e.Entity.Id}");
+            UpdateEntity(e.Entity.Id, entity =>
             {
                 entity.Id = e.Entity.Id;
                 entity.Name = e.Entity.Name;
@@ -88,7 +88,7 @@ public class StateManager
 
             if (e.Name == null) return;
 
-            UpdateEntity(e.Name, entity =>
+            UpdateEntity(e.Id, entity =>
             {
                 entity.Name = e.Name;
                 entity.Id = e.Id;
@@ -123,14 +123,14 @@ public class StateManager
                 SoftReset();
             }
 
-            UpdateEntity(e.Name, entity =>
+            UpdateEntity(e.Id, entity =>
             {
                 entity.Id = e.Id;
                 entity.Name = e.Name;
                 return entity;
             });
 
-            UpdateEntity(e.TargetName, entity =>
+            UpdateEntity(e.TargetId, entity =>
             {
                 entity.Id = e.TargetId;
                 entity.Name = e.TargetName;
@@ -139,7 +139,7 @@ public class StateManager
                 return entity;
             });
 
-            var damageOwner = _Game.Entities[e.Name];
+            var damageOwner = _Game.Entities[e.Id];
             _Game.Entities.TryGetValue(e?.TargetName ?? "", out Entity? damageTarget);
 
             if (
@@ -252,34 +252,35 @@ public class StateManager
 
             if (sourceName == null) return;
 
-            UpdateEntity(sourceName, entity =>
+            foreach (var (key, value) in _Game.Entities)
             {
-                entity.Name = sourceName;
-                return entity;
-            });
+                if (value.Name == sourceName)
+                {
+                    value.HealingDone += e.HealAmount;
 
-            var gameEntity = this._Game.Entities[sourceName];
-            gameEntity.HealingDone += e.HealAmount;
+                    if (value.IsPlayer)
+                    {
+                        this._Game.DamageStatistics.TotalHealingDone += e.HealAmount;
+                        this._Game.DamageStatistics.TopHealingDone = Math.Max(
+                            this._Game.DamageStatistics.TopHealingDone, value.HealingDone);
+                    }
 
-            if (gameEntity.IsPlayer)
-            {
-                this._Game.DamageStatistics.TotalHealingDone += e.HealAmount;
-                this._Game.DamageStatistics.TopHealingDone = Math.Max(
-                    this._Game.DamageStatistics.TopHealingDone, gameEntity.HealingDone);
+                    break;
+                }
             }
         });
         manager.Subscribe<EntityBuffEvent>(e =>
         {
             if (e.IsNew)
             {
-                UpdateEntity(e.Name, entity =>
+                UpdateEntity(e.Id, entity =>
                 {
                     entity.Name = e.Name;
                     entity.Id = e.Id;
                     return entity;
                 });
 
-                var gameEntity = this._Game.Entities[e.Name];
+                var gameEntity = this._Game.Entities[e.Id];
                 gameEntity.ShieldDone += e.ShieldAmount;
 
                 if (gameEntity.IsPlayer)
@@ -292,17 +293,17 @@ public class StateManager
         });
         manager.Subscribe<EntityCounterAttackEvent>(e =>
         {
-            UpdateEntity(e.Name, entity =>
+            UpdateEntity(e.Id, entity =>
             {
                 entity.Name = e.Name;
                 entity.Id = e.Id;
                 return entity;
             });
 
-            this._Game.Entities[e.Name].Hits.Counter += 1;
-            if (this._Game.Entities[e.Name].Skills.ContainsKey(e.SkillName))
+            this._Game.Entities[e.Id].Hits.Counter += 1;
+            if (this._Game.Entities[e.Id].Skills.ContainsKey(e.SkillName))
             {
-                this._Game.Entities[e.Name].Skills[e.SkillName].Hits.Counter += 1;
+                this._Game.Entities[e.Id].Skills[e.SkillName].Hits.Counter += 1;
             }
         });
         manager.Subscribe<PhaseTransitionEvent>(e =>
@@ -314,22 +315,22 @@ public class StateManager
         });
     }
 
-    private void UpdateEntity(string? name, Func<Entity, Entity> modify)
+    private void UpdateEntity(string? id, Func<Entity, Entity> modify)
     {
         lock (_Game.Entities)
         {
-            if (name == null) name = "";
-            this._Game.Entities.TryGetValue(name, out Entity? entity);
+            if (id == null) id = "";
+            this._Game.Entities.TryGetValue(id, out Entity? entity);
 
             if (entity == null)
             {
                 entity = Entity.CreateEntity();
             }
 
-            this._Game.Entities[name] = entity.Modify(modify).Update();
+            this._Game.Entities[id] = entity.Modify(modify).Update();
         }
     }
-
+    
     private void SoftReset()
     {
         lock (_Game.Entities)
@@ -371,7 +372,7 @@ public class StateManager
         {
             if (entity.Value.IsPlayer) continue;
             if (entity.Value.CurrentHp > 0) continue;
-            if(!entity.Value.IsDead) continue;
+            if (!entity.Value.IsDead) continue;
 
             gameEntities.Remove(entity.Key);
         }
