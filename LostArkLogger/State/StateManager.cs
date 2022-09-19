@@ -43,7 +43,11 @@ public class StateManager
             UpdateEntity(e.Entity.Id, entity =>
             {
                 entity.Id = e.Entity.Id;
-                entity.Name = e.Entity.Name;
+                if (entity.Name != e.Entity.Class)
+                {
+                    entity.Name = e.Entity.Name;
+                }
+
                 entity.IsPlayer = e.Entity.IsPlayer;
                 // We don't want to overwrite the entity's metadata with the default values
                 if (!e.IsUnknown || entity.GearScore == 0)
@@ -330,7 +334,7 @@ public class StateManager
             this._Game.Entities[id] = entity.Modify(modify).Update();
         }
     }
-    
+
     private void SoftReset()
     {
         lock (_Game.Entities)
