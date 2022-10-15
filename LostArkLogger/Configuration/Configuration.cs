@@ -17,6 +17,7 @@ public class Configuration
     public int RefreshRate = 250;
     public bool UseHttpBridge = false;
     public bool WebOverlay = true;
+    public string LocalAddress = "";
 
     public static byte[] ReadXorBinary(string name)
     {

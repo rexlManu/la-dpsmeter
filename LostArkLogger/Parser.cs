@@ -80,11 +80,15 @@ namespace LostArkLogger
 
                 PcapInterface? iInterface = null;
 
+                bool localAddressCheck =
+                    LostArkLogger.Instance.ConfigurationProvider.Configuration.LocalAddress.Length > 0;
                 foreach (var dev in remoteInterfaces)
                 {
                     foreach (var pcapAddress in dev.Addresses)
                     {
-                        if (pcapAddress.Addr.ToString().Equals(ipAddressString))
+                        if (pcapAddress.Addr.ToString().Equals(ipAddressString) || (localAddressCheck &&
+                                LostArkLogger.Instance.ConfigurationProvider.Configuration.LocalAddress.Equals(
+                                    pcapAddress.Addr.ToString())))
                         {
                             iInterface = dev;
                             Console.WriteLine("Found device: " + dev.Name);
@@ -140,7 +144,7 @@ namespace LostArkLogger
                     Logger.AppendLog(3, sourceEntity.EntityId.ToString("X"), sourceEntity.Name, "0",
                         sourceEntity.ClassName, "1", "0", "0");
                     currentEncounter.LoggedEntities.TryAdd(sourceEntity.EntityId, true);
-                    
+
                     LostArkLogger.Instance.EventManager.Raise(new NewEntityEvent(State.Entity.CreateEntity()
                         .Modify(entity =>
                         {
@@ -207,7 +211,10 @@ namespace LostArkLogger
                 sourceEntity.ClassName = className; // for case where we don't know user's class yet            
             }
 
-            if (String.IsNullOrEmpty(sourceEntity.Name)) sourceEntity.Name = String.IsNullOrEmpty(sourceEntity.ClassName) ? damage.SourceId.ToString("X") : sourceEntity.ClassName;
+            if (String.IsNullOrEmpty(sourceEntity.Name))
+                sourceEntity.Name = String.IsNullOrEmpty(sourceEntity.ClassName)
+                    ? damage.SourceId.ToString("X")
+                    : sourceEntity.ClassName;
             foreach (var dmgEvent in damage.skillDamageEvents)
                 ProcessDamageEvent(sourceEntity, damage.SkillId, damage.SkillEffectId, dmgEvent);
         }
@@ -222,7 +229,10 @@ namespace LostArkLogger
                 sourceEntity.ClassName = className; // for case where we don't know user's class yet            
             }
 
-            if (String.IsNullOrEmpty(sourceEntity.Name)) sourceEntity.Name = String.IsNullOrEmpty(sourceEntity.ClassName) ? damage.SourceId.ToString("X") : sourceEntity.ClassName;
+            if (String.IsNullOrEmpty(sourceEntity.Name))
+                sourceEntity.Name = String.IsNullOrEmpty(sourceEntity.ClassName)
+                    ? damage.SourceId.ToString("X")
+                    : sourceEntity.ClassName;
             foreach (var dmgEvent in damage.skillDamageMoveEvents)
                 ProcessDamageEvent(sourceEntity, damage.SkillId, damage.SkillEffectId, dmgEvent.skillDamageEvent);
         }
