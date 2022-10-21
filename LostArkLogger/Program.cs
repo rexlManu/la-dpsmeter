@@ -21,7 +21,7 @@ namespace LostArkLogger
             Console.WriteLine(" DPS Meter - https://github.com/rexlManu/dps-meter");
             Console.WriteLine(
                 " If you have any issues, please report them on the github page or on our discord server.");
-            Console.WriteLine(" Discord: discord.gg/bm8ntsjveb");
+            Console.WriteLine(" Discord: discord.gg/bM8NtsJVeb");
             Console.WriteLine("");
             Console.WriteLine(" Credits to the following people:");
             Console.WriteLine(

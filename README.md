@@ -140,7 +140,7 @@ You can find the dps meter at `http://server-ip:1338` (port 1338 in this example
 
 ## Support
 
-We have a [discord server](https://discord.gg/bm8ntsjveb) where you can ask questions or report bugs.
+We have a [discord server](https://discord.gg/bM8NtsJVeb) where you can ask questions or report bugs.
 
 # WARNING
 
