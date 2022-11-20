@@ -869,7 +869,16 @@ namespace LostArkLogger
                     }
 
                     Logger.DoDebugLog(bytes);
-                    ProcessPacket(bytes.ToList());
+                    try
+                    {
+                        ProcessPacket(bytes.ToList());
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("A packet processing error occured: " + e);
+                        Console.WriteLine("Stack trace: " + e.StackTrace);
+                        Console.WriteLine("Please report this bug in discord!");
+                    }
                 }
             }
         }
