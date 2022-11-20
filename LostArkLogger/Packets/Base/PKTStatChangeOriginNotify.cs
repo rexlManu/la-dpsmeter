@@ -16,5 +16,7 @@ namespace LostArkLogger
         public UInt32 u32_0;
         public Byte b_0;
         public Byte b_1;
+        public Byte b_2;
+        public Byte b_3;
     }
 }
