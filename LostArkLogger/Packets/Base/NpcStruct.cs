@@ -62,5 +62,6 @@ namespace LostArkLogger
         public Byte b_28;
         public Byte b_29;
         public Byte b_30;
+        public SkillRunes skillRunes;
     }
 }

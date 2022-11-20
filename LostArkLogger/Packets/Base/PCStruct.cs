@@ -18,6 +18,7 @@ namespace LostArkLogger
         public UInt16 ClassId;
         public UInt16 Level;
         public String str_0;
+        public String str_1;
         public List<UInt16> u16list_0;
         public List<StatusEffectData> statusEffectDatas;
         public List<subPKTInitPC29> subPKTInitPC29s;
@@ -29,6 +30,8 @@ namespace LostArkLogger
         public Byte[] bytearray_0;
         public Byte[] bytearray_1;
         public UInt64 u64_0;
+        public UInt64 u64_1;
+        public UInt64 u64_2;
         public Byte[] bytearray_2;
         public UInt32 u32_0;
         public UInt32 u32_1;
@@ -39,10 +42,13 @@ namespace LostArkLogger
         public UInt32 u32_6;
         public UInt32 u32_7;
         public UInt32 u32_8;
+        public UInt32 u32_9;
         public UInt16 u16_0;
         public UInt16 u16_1;
         public UInt16 u16_2;
         public UInt16 u16_3;
+        public UInt16 u16_4;
+        public UInt16 u16_5;
         public Byte b_0;
         public Byte b_1;
         public Byte b_2;
