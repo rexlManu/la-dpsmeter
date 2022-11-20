@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
 namespace LostArkLogger
 {
     public partial class PCStruct
@@ -52,6 +54,16 @@ namespace LostArkLogger
             u32_4 = reader.ReadUInt32();
             u32_5 = reader.ReadUInt32();
             b_12 = reader.ReadByte();
+            
+            try {
+                var nonASCII = @"[^\x00-\x7F]+";
+                var rgx = new Regex(nonASCII);
+                if (rgx.IsMatch(Name))
+                    Name = Npc.GetPcClass(ClassId);
+            } catch (Exception e) {
+                Console.WriteLine("Failed matching PC name:\n" + e);
+                Name = "@BAD_NAME@" + new Random().Next(1000, 9999);
+            }
         }
     }
 }
