@@ -60,6 +60,14 @@ docker run -d \
   ghcr.io/rexlmanu/la-dpsmeter:main
 ```
 
+### Fourth step: Access the overlay
+
+You can access the overlay by opening the following url in your browser:
+
+```
+http://<remote-computer-ip>:1338
+```
+
 ## Update
 
 To update the container, you have to pull the latest version of the docker image with the following command:
