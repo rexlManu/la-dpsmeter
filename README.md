@@ -57,6 +57,7 @@ docker run -d \
   --restart unless-stopped \
   -v $(pwd)/config.yml:/app/config.yml \
   -v $(pwd)/logs:/mnt/raid1/apps/'Lost Ark Logs' \
+  -p 1338:1338 \
   ghcr.io/rexlmanu/la-dpsmeter:main
 ```
 
