@@ -26,6 +26,15 @@ You need to install [npcap](https://nmap.org/npcap/) on your main computer.
 Make sure to have the option `Install Npcap in WinPcap API-compatible Mode` checked.
 
 After that, you have to install rpcapd.
+
+if your windows is blocked for install unsigned software, you have to disable it.
+
+```powershell
+Set-ExecutionPolicy Unrestricted
+```
+
+Then you can install rpcapd with the following command:
+
 You can use the following [script to install it](bin/install-rpcapd.ps1).
 
 This script install rpcapd as a service. You can check the service in your `services.msc` or with the following command:
