@@ -1,6 +1,6 @@
 # idk if korea works, never tested it.
 region: Steam
-p-cap-address: 192.168.86.24
+p-cap-address: <<UPDATE>>
 p-cap-interface: ''
 p-cap-port: 1337
 web-port: 1338
