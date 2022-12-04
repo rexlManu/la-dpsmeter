@@ -61,13 +61,7 @@ You can find out your ip address by running `ipconfig` in a command prompt. It's
 Third, make sure Docker is running (first step), navigate to the la-dpsmeter directory, and run the Docker image:
 
 ```bash
-docker run -d \
-  --name la-dpsmeter \
-  --restart unless-stopped \
-  -v ${pwd}/config.yml:/app/config.yml \
-  -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' \
-  -p 1338:1338 \
-  ghcr.io/therealhumes/la-dpsmeter:main
+docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 ghcr.io/therealhumes/la-dpsmeter:main
 ```
 
 NOTE1: You need to run the command from the la-dpsmeter directory for it to find the config.yml file to inject.
