@@ -58,10 +58,9 @@ Second, change `p-cap-address` to the ip address of your main computer in the `c
 
 You can find out your ip address by running `ipconfig` in a command prompt. It's your local lan address.
 
-Third, make sure Docker is running (first step), run the Docker image:
+Third, make sure Docker is running (first step), navigate to the la-dpsmeter directory, and run the Docker image:
 
-```powershell
-cd la-dpsmeter
+```bash
 docker run -d \
   --name la-dpsmeter \
   --restart unless-stopped \
