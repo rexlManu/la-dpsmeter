@@ -3,6 +3,7 @@ name: Build App
 on:
   # Trigger on commit, pull request, and push
   push:
+    branches: ["main"]
   pull_request:
   
   # manually trigger the workflow

@@ -48,8 +48,6 @@ Get-Service rpcapd
 
 ### Third step: Configure and run the container
 
-This fork requires you to pull the code, update the config.yml file, build the image locally, and run that local image.
-
 First, clone the repository so you have the code locally on the machine that will run the meter:
 
 ```powershell
@@ -60,16 +58,21 @@ Second, change `p-cap-address` to the ip address of your main computer in the `c
 
 You can find out your ip address by running `ipconfig` in a command prompt. It's your local lan address.
 
-Third, make sure Docker is running (first step), then build the code into a Docker image and run the container locally:
+Third, make sure Docker is running (first step), run the Docker image:
 
 ```powershell
 cd la-dpsmeter
-docker build -t la-dpsmeter .
-docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 la-dpsmeter
+docker run -d \
+  --name la-dpsmeter \
+  --restart unless-stopped \
+  -v ${pwd}/config.yml:/app/config.yml \
+  -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' \
+  -p 1338:1338 \
+  ghcr.io/therealhumes/la-dpsmeter:main
 ```
 
-NOTE1: You need to run the commands from the la-dpsmeter directory for it to find the Dockerfile and config.yml file.
-NOTE2: logs are sent to the la-dpsmeter/logs directory; you can point to the loa-details directory if using loa-details.
+NOTE1: You need to run the command from the la-dpsmeter directory for it to find the config.yml file to inject.
+NOTE2: Logs are sent to the la-dpsmeter/logs directory; you can point to the loa-details directory if using loa-details.
 
 ### Fourth step: Access the overlay
 
