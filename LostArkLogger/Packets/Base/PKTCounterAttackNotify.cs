@@ -12,6 +12,7 @@ namespace LostArkLogger
         }
         public UInt64 SourceId;
         public UInt64 TargetId;
+        public UInt32 Type;
         public Byte[] bytearray_0;
         public Byte[] bytearray_1;
         public Byte[] bytearray_2;
