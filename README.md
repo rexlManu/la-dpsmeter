@@ -60,7 +60,7 @@ Once done, make sure Docker from the first step is running, then you can continu
 ```powershell
 cd la-dpsmeter
 docker build -t la-dpsmeter .
-docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v $(pwd)/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 la-dpsmeter
+docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 la-dpsmeter
 ```
 
 Note that ${pwd}/config.yml assumes you're running the command while in the la-dpsmeter directory,  with the updated config.yml file.
