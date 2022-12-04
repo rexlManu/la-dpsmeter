@@ -1,10 +1,9 @@
 # Steam is correct for the NA/EU regions
 region: Steam
-# update the below p-cap-address line to your own ip-address! This is also the IP where you will access the web overlay.
+# update the below p-cap-address to the ip address of your main machine
 p-cap-address: 192.168.86.24
 p-cap-interface: ''
 p-cap-port: 1337
-# this port in combination with your p-cap-address ip will be where the web overlay is; in this example, https://192.168.86.24:1338
 web-port: 1338
 # How often should the overlay gets updated, in milliseconds
 refresh-rate: 250

@@ -11,7 +11,7 @@ Zero risk made possible with [tabfloater](https://www.tabfloater.io).
 
 We call the machine where you run Lost Ark the main computer.
 
-Here are three options for where to run the DPS meter, which can be accessed in a web overlay:
+Here are some options for where to run the DPS meter, which can be accessed in a web overlay:
 1. On your main computer
 2. On a Virtual Machine on your main computer
 3. On a remote computer on the same network as your main computer
@@ -35,7 +35,7 @@ After that, you have to install rpcapd.
 If your windows is blocked for install unsigned software, you have to disable it.
 
 ```powershell
-Set-ExecutionPolicy Unrestricted
+Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy RemoteSigned -Force
 ```
 
 Then you can install rpcapd. You can use the following [script to install it](bin/install-rpcapd.ps1).
@@ -51,7 +51,7 @@ Get-Service rpcapd
 First, clone the repository so you have the code locally on the machine that will run the meter:
 
 ```powershell
-git clone https://github.com/therealhumes/la-dpsmeter.git
+git clone https://github.com/raxlManu/la-dpsmeter.git
 ```
 
 Second, change `p-cap-address` to the ip address of your main computer in the `config.yml` file in the root directory.
@@ -61,7 +61,7 @@ You can find out your ip address by running `ipconfig` in a command prompt. It's
 Third, make sure Docker is running (first step), navigate to the la-dpsmeter directory, and run the Docker image:
 
 ```bash
-docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 ghcr.io/therealhumes/la-dpsmeter:main
+docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 ghcr.io/rexlManu/la-dpsmeter:main
 ```
 
 NOTE1: You need to run the command from the la-dpsmeter directory for it to find the config.yml file to inject.
@@ -69,7 +69,7 @@ NOTE2: Logs are sent to the la-dpsmeter/logs directory; you can point to the loa
 
 ### Fourth step: Access the overlay
 
-You can access the overlay by opening the following url in your browser:
+You can access the web overlay by opening the following url in your browser:
 
 ```
 http://<ip-address-where-dps-meter-is-running>:1338
@@ -92,7 +92,7 @@ You can also use the Docker applications UI to stop/remove containers, if you wo
 To update the image, you have to pull the latest version of the docker image with the following command:
 
 ```bash
-docker pull ghcr.io/therealhumes/la-dpsmeter:main
+docker pull ghcr.io/rexlManu/la-dpsmeter:main
 ```
 
 Then use the same run command from the third step.
