@@ -11,12 +11,16 @@ Zero risk made possible with [tabfloater](https://www.tabfloater.io).
 
 We call the pc where you run the game the main computer.
 
+Here are three options for where to run the DPS meter, which can then be accessed in a web-based UI on your main computer:
+1. On your main computer
+2. On a Virtual Machine on your main computer
+3. On a remote computer on the same network as your main computer
+
+Evaluate your tolerance for risk (highest-to-lowest risk) and your tolerance for overhead (lowest-to-highest overhead).
+
 ### First step: Setup docker
 
-You have to install docker on the machine where you will be running the meter. You have three main options:
-1. On your main computer (easiest but may carry higher risk, despite being abstracted in a Docker container)
-2. On a Virtual Machine on your main computer (generally safe)
-3. On a remote computer on the same network as your main computer (nice if you don't want the risk of option 1 or to deal with a VM)
+You have to install docker on the machine where you will be running the meter (any of the three options from setup above).
 
 For instructions on how to install docker, check [docker desktop](https://www.docker.com/).
 
@@ -45,7 +49,9 @@ Get-Service rpcapd
 
 ### Third step: Configure and run the container
 
-Currently this fork requires you to pull the code down, update the config.yml file, build the image locally, and run that local image, like so:
+This fork requires you to pull the code down, update the config.yml file, build the image locally, and run that local image.
+
+First, clone this repository so you have the code locally on the machine that will run the meter.
 
 ```powershell
 git clone https://github.com/therealhumes/la-dpsmeter.git
@@ -55,7 +61,7 @@ You now have to change the `p-cap-address` to the ip address of your main comput
 
 You can find out your ip address by running `ipconfig` in a command prompt. It's your local lan address, not your public ip.
 
-Once done, make sure Docker from the first step is running, then you can continue with building the docker image and running it:
+Once done, make sure Docker is running (first step), then you can continue with building the docker image and running it from the la-dpsmeter directory.
 
 ```powershell
 cd la-dpsmeter
@@ -63,25 +69,30 @@ docker build -t la-dpsmeter .
 docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 la-dpsmeter
 ```
 
-Note that ${pwd}/config.yml assumes you're running the command while in the la-dpsmeter directory,  with the updated config.yml file.
+Note that ${pwd}/config.yml assumes you're running the command while in the la-dpsmeter directory, with the updated config.yml file.
+Also note that the logs are being directed to the la-dpsmeter/logs directory here, but can be pointed to the loa-details directory if using loa-details.
 
 ### Fourth step: Access the overlay
 
 You can access the overlay by opening the following url in your browser:
 
 ```
-http://<remote-computer-ip>:1338
+http://<ip-address-where-dps-meter-is-running>:1338
 ```
+
+If you're running the meter on your main computer, the ip address of the overlay will be the same as the ip address you set in the `config.yml` file.
 
 ## Update
 
-To update the container, delete the old container and follow the third step above again to pull the new code, re-build it, and re-run it.
+To update the container (or to kill it/refresh it), delete the old container and follow the third step above again to pull the new code, re-build it, and re-run it.
 
 To delete an old container:
 
-```
+```powershell
 docker rm -f la-dpsmeter
 ```
+
+You can also use the Docker applications UI to stop/remove containers, if you would prefer.
 
 ## Support & Troubleshooting
 
