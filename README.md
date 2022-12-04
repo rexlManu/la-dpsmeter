@@ -9,15 +9,16 @@ Zero risk made possible with [tabfloater](https://www.tabfloater.io).
 
 ## Setup
 
-We call the pc where you run the game the main computer and the pc where you run the dps meter the remote computer.
-Both computers have to be in the same network.
-
-It's possible but not recommended to run the dps meter on the main computer.
+We call the pc where you run the game the main computer.
 
 ### First step: Setup docker
-You have to install docker on the remote computer.
 
-For instructions on how to install docker, check the [docker desktop](https://www.docker.com/).
+You have to install docker on the machine where you will be running the meter. You have three main options:
+1. On your main computer (easiest but may carry higher risk, despite being abstracted in a Docker container)
+2. On a Virtual Machine on your main computer (generally safe)
+3. On a remote computer on the same network as your main computer (nice if you don't want the risk of option 1 or to deal with a VM)
+
+For instructions on how to install docker, check [docker desktop](https://www.docker.com/).
 
 ### Second step: Setup rpcapd
 
@@ -27,12 +28,11 @@ Make sure to have the option `Install Npcap in WinPcap API-compatible Mode` chec
 
 After that, you have to install rpcapd.
 
-if your windows is blocked for install unsigned software, you have to disable it.
+If your windows is blocked for install unsigned software, you have to disable it.
 
 ```powershell
 Set-ExecutionPolicy Unrestricted
 ```
-
 Then you can install rpcapd with the following command:
 
 You can use the following [script to install it](bin/install-rpcapd.ps1).
@@ -45,30 +45,25 @@ Get-Service rpcapd
 
 ### Third step: Configure and run the container
 
-You have to pull the latest version of the docker image with the following command:
+Currently this fork requires you to pull the code down, update the config.yml file, build the image locally, and run that local image, like so:
 
-```bash
-docker pull ghcr.io/rexlmanu/la-dpsmeter:main
+```powershell
+git clone https://github.com/therealhumes/la-dpsmeter.git
 ```
 
-Copy the template from [default.config.yml](default.config.yml) and rename it to `config.yml`.
-You have to change the `p-cap-address` to the ip address of your main computer.
+You now have to change the `p-cap-address` to the ip address of your main computer in the `config.yml` file located in the root directory.
 
 You can find out your ip address by running `ipconfig` in a command prompt. It's your local lan address, not your public ip.
 
-After that, you can run the container with the following command:
+Once done, make sure Docker from the first step is running, then you can continue with building the docker image and running it:
 
-If you're on powershell, replace `$(pwd)` with `${PWD}`. On cmd, replace `$(pwd)` with `%cd%`.
-
-```bash
-docker run -d \
-  --name la-dpsmeter \
-  --restart unless-stopped \
-  -v $(pwd)/config.yml:/app/config.yml \
-  -v $(pwd)/logs:/mnt/raid1/apps/'Lost Ark Logs' \
-  -p 1338:1338 \
-  ghcr.io/rexlmanu/la-dpsmeter:main
+```powershell
+cd la-dpsmeter
+docker build -t la-dpsmeter .
+docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v $(pwd)/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 la-dpsmeter
 ```
+
+Note that ${pwd}/config.yml assumes you're running the command while in the la-dpsmeter directory,  with the updated config.yml file.
 
 ### Fourth step: Access the overlay
 
@@ -80,13 +75,9 @@ http://<remote-computer-ip>:1338
 
 ## Update
 
-To update the container, you have to pull the latest version of the docker image with the following command:
+To update the container, delete the old container and follow the third step above again to pull the new code, re-build it, and re-run it.
 
-```bash
-docker pull ghcr.io/rexlmanu/la-dpsmeter:main
-```
-
-After that, you have to delete the container and recreate it with the same command as above (setup).
+To delete an old container:
 
 ```
 docker rm -f la-dpsmeter
