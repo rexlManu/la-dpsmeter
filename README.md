@@ -9,9 +9,9 @@ Zero risk made possible with [tabfloater](https://www.tabfloater.io).
 
 ## Setup
 
-We call the pc where you run the game the main computer.
+We call the machine where you run Lost Ark the main computer.
 
-Here are three options for where to run the DPS meter, which can then be accessed in a web-based UI on your main computer:
+Here are three options for where to run the DPS meter, which can be accessed in a web overlay:
 1. On your main computer
 2. On a Virtual Machine on your main computer
 3. On a remote computer on the same network as your main computer
@@ -20,7 +20,7 @@ Evaluate your tolerance for risk (highest-to-lowest risk) and your tolerance for
 
 ### First step: Setup docker
 
-You have to install docker on the machine where you will be running the meter (any of the three options from setup above).
+You have to install docker on the machine where you will be running the meter (one of the options from setup above).
 
 For instructions on how to install docker, check [docker desktop](https://www.docker.com/).
 
@@ -37,9 +37,8 @@ If your windows is blocked for install unsigned software, you have to disable it
 ```powershell
 Set-ExecutionPolicy Unrestricted
 ```
-Then you can install rpcapd with the following command:
 
-You can use the following [script to install it](bin/install-rpcapd.ps1).
+Then you can install rpcapd. You can use the following [script to install it](bin/install-rpcapd.ps1).
 
 This script install rpcapd as a service. You can check the service in your `services.msc` or with the following command:
 
@@ -49,19 +48,19 @@ Get-Service rpcapd
 
 ### Third step: Configure and run the container
 
-This fork requires you to pull the code down, update the config.yml file, build the image locally, and run that local image.
+This fork requires you to pull the code, update the config.yml file, build the image locally, and run that local image.
 
-First, clone this repository so you have the code locally on the machine that will run the meter.
+First, clone the repository so you have the code locally on the machine that will run the meter:
 
 ```powershell
 git clone https://github.com/therealhumes/la-dpsmeter.git
 ```
 
-You now have to change the `p-cap-address` to the ip address of your main computer in the `config.yml` file located in the root directory.
+Second, change `p-cap-address` to the ip address of your main computer in the `config.yml` file in the root directory.
 
-You can find out your ip address by running `ipconfig` in a command prompt. It's your local lan address, not your public ip.
+You can find out your ip address by running `ipconfig` in a command prompt. It's your local lan address.
 
-Once done, make sure Docker is running (first step), then you can continue with building the docker image and running it from the la-dpsmeter directory.
+Third, make sure Docker is running (first step), then build the code into a Docker image and run the container locally:
 
 ```powershell
 cd la-dpsmeter
@@ -69,8 +68,8 @@ docker build -t la-dpsmeter .
 docker run -d --name la-dpsmeter --restart unless-stopped -v ${pwd}/config.yml:/app/config.yml -v ${pwd}/logs:/mnt/raid1/apps/'Lost Ark Logs' -p 1338:1338 la-dpsmeter
 ```
 
-Note that ${pwd}/config.yml assumes you're running the command while in the la-dpsmeter directory, with the updated config.yml file.
-Also note that the logs are being directed to the la-dpsmeter/logs directory here, but can be pointed to the loa-details directory if using loa-details.
+NOTE1: You need to run the commands from the la-dpsmeter directory for it to find the Dockerfile and config.yml file.
+NOTE2: logs are sent to the la-dpsmeter/logs directory; you can point to the loa-details directory if using loa-details.
 
 ### Fourth step: Access the overlay
 
@@ -80,11 +79,11 @@ You can access the overlay by opening the following url in your browser:
 http://<ip-address-where-dps-meter-is-running>:1338
 ```
 
-If you're running the meter on your main computer, the ip address of the overlay will be the same as the ip address you set in the `config.yml` file.
+If running the meter on your main computer, the ip address will be the same as what you set in the `config.yml` file.
 
 ## Update
 
-To update the container (or to kill it/refresh it), delete the old container and follow the third step above again to pull the new code, re-build it, and re-run it.
+To update the container (or to kill it/refresh it), delete the old container and follow the third step above again.
 
 To delete an old container:
 
