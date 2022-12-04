@@ -79,7 +79,7 @@ If running the meter on your main computer, the ip address will be the same as w
 
 ## Update
 
-To update the container (or to kill it/refresh it), delete the old container and follow the third step above again.
+To update the container (or to kill it/refresh it), delete the old container and re-run or update the existing image.
 
 To delete an old container:
 
@@ -88,6 +88,14 @@ docker rm -f la-dpsmeter
 ```
 
 You can also use the Docker applications UI to stop/remove containers, if you would prefer.
+
+To update the image, you have to pull the latest version of the docker image with the following command:
+
+```bash
+docker pull ghcr.io/therealhumes/la-dpsmeter:main
+```
+
+Then use the same run command from the third step.
 
 ## Support & Troubleshooting
 
