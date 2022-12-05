@@ -51,7 +51,7 @@ Get-Service rpcapd
 First, clone the repository so you have the code locally on the machine that will run the meter:
 
 ```powershell
-git clone https://github.com/raxlManu/la-dpsmeter.git
+git clone https://github.com/rexlManu/la-dpsmeter.git
 ```
 
 Second, change `p-cap-address` to the ip address of your main computer in the `config.yml` file in the root directory.
