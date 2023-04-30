@@ -1,5 +1,7 @@
 # Lostark DPS Meter
 
+This project is outdated and not will be updated anymore. Smiltegate also started to activly ban users of other meters that are running on the same pc. So be caution about that.
+
 A fork of [https://github.com/karaeren/LostArkLogger](https://github.com/karaeren/LostArkLogger) with the capability to
 remote log packets via winpcap for docker.
 
